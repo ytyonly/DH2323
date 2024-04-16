@@ -15,6 +15,7 @@ const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL2Aux *sdlAux;
 int t;
+vector<Triangle> triangles;
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -26,6 +27,7 @@ int main( int argc, char* argv[] )
 {
 	sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
 	t = SDL_GetTicks();	// Set start value for timer.
+	LoadTestModel(triangles);
 
 	while (!sdlAux->quitEvent())
 	{

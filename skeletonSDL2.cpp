@@ -11,13 +11,15 @@ using glm::mat3;
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-const int SCREEN_WIDTH = 500;
-const int SCREEN_HEIGHT = 500;
-SDL2Aux *sdlAux;
+const int SCREEN_WIDTH = 100;
+const int SCREEN_HEIGHT = 100;
+SDL2Aux* sdlAux;
 int t;
 vector<Triangle> triangles;
 float focalLength = SCREEN_HEIGHT;
 vec3 cameraPos(0, 0, -3);
+mat3 R = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
+float yaw = 0;
 
 // ----------------------------------------------------------------------------
 // STRUCTURE
@@ -36,7 +38,7 @@ void Update(void);
 void Draw(void);
 bool ClosestIntersection(vec3 start, vec3 dir, const vector <Triangle >& triangles, Intersection& closeIntersection);
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
 	sdlAux = new SDL2Aux(SCREEN_WIDTH, SCREEN_HEIGHT);
 	t = SDL_GetTicks();	// Set start value for timer.
@@ -55,25 +57,36 @@ void Update(void)
 {
 	// Compute frame time:
 	int t2 = SDL_GetTicks();
-	float dt = float(t2-t);
+	float dt = float(t2 - t);
 	t = t2;
 	cout << "Render time: " << dt << " ms." << endl;
 	const Uint8* keystate = SDL_GetKeyboardState(NULL);
+
+	float movement = 0.1;
+
+	vec3 right(R[0][0], R[0][1], R[0][2]);
+	vec3 down(R[1][0], R[1][1], R[1][2]);
+	vec3 forward(R[2][0], R[2][1], R[2][2]);
+
 	if (keystate[SDL_SCANCODE_UP])
 	{
-
+		cameraPos += movement * forward;
 	}
 	if (keystate[SDL_SCANCODE_DOWN])
 	{
-
+		cameraPos -= movement * forward;
 	}
 	if (keystate[SDL_SCANCODE_LEFT])
 	{
-
+		yaw += movement;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		cameraPos -= movement * right;
 	}
 	if (keystate[SDL_SCANCODE_RIGHT])
 	{
-
+		yaw -= movement;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		cameraPos += movement * right;
 	}
 }
 
@@ -81,9 +94,9 @@ void Draw()
 {
 	sdlAux->clearPixels();
 
-	for( int y=0; y<SCREEN_HEIGHT; ++y )
+	for (int y = 0; y < SCREEN_HEIGHT; ++y)
 	{
-		for( int x=0; x<SCREEN_WIDTH; ++x )
+		for (int x = 0; x < SCREEN_WIDTH; ++x)
 		{
 			vec3 dir(x - SCREEN_WIDTH / 2, y - SCREEN_HEIGHT / 2, focalLength);
 			dir = glm::normalize(dir);

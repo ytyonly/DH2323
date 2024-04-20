@@ -63,9 +63,6 @@ void Update(void)
 	const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
 	float movement = 0.1;
-
-	vec3 right(R[0][0], R[0][1], R[0][2]);
-	vec3 down(R[1][0], R[1][1], R[1][2]);
 	vec3 forward(R[2][0], R[2][1], R[2][2]);
 
 	if (keystate[SDL_SCANCODE_UP])
@@ -78,15 +75,13 @@ void Update(void)
 	}
 	if (keystate[SDL_SCANCODE_LEFT])
 	{
-		yaw += movement;
+		yaw -= movement;
 		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
-		cameraPos -= movement * right;
 	}
 	if (keystate[SDL_SCANCODE_RIGHT])
 	{
-		yaw -= movement;
+		yaw += movement;
 		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
-		cameraPos += movement * right;
 	}
 }
 
@@ -124,9 +119,9 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector <Triangle >& triangl
 	for (size_t i = 0; i < triangles.size(); i++)
 	{
 		const Triangle triangle = triangles[i];
-		vec3 v0 = triangle.v0;
-		vec3 v1 = triangle.v1;
-		vec3 v2 = triangle.v2;
+		vec3 v0 = triangle.v0 * R;
+		vec3 v1 = triangle.v1 * R;
+		vec3 v2 = triangle.v2 * R;
 		vec3 e1 = v1 - v0;
 		vec3 e2 = v2 - v0;
 		vec3 b = start - v0;

@@ -20,6 +20,10 @@ float focalLength = SCREEN_HEIGHT;
 vec3 cameraPos(0, 0, -3);
 mat3 R = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
 float yaw = 0;
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightPower = 14.f * vec3(1, 1, 1);
+vec3 indirectLight = 0.5f * vec3(1, 1, 1);
+
 
 // ----------------------------------------------------------------------------
 // STRUCTURE
@@ -83,6 +87,37 @@ void Update(void)
 		yaw += movement;
 		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 	}
+
+	// Move Light Source using WASDQE
+	if (keystate[SDL_SCANCODE_W])
+	{
+		lightPos += movement * forward;
+	}
+
+	if (keystate[SDL_SCANCODE_S])
+	{
+		lightPos -= movement * forward;
+	}
+
+	if (keystate[SDL_SCANCODE_A])
+	{
+		lightPos -= movement * vec3(R[0][0], R[0][1], R[0][2]);
+	}
+
+	if (keystate[SDL_SCANCODE_D])
+	{
+		lightPos += movement * vec3(R[0][0], R[0][1], R[0][2]);
+	}
+
+	if (keystate[SDL_SCANCODE_Q])
+	{
+		lightPos -= movement * vec3(R[2][0], R[2][1], R[2][2]);
+	}
+
+	if (keystate[SDL_SCANCODE_E])
+	{
+		lightPos += movement * vec3(R[2][0], R[2][1], R[2][2]);
+	}
 }
 
 void Draw()
@@ -101,8 +136,14 @@ void Draw()
 
 			if (ClosestIntersection(cameraPos, dir, triangles, closeIntersection))
 			{
-				const Triangle& hit = triangles[closeIntersection.triangleIndex];
-				color = hit.color;
+				// const Triangle& hit = triangles[closeIntersection.triangleIndex];
+				// color = hit.color;
+
+				// Direct Lighting (Task 6.3)
+				color = DirectLight(closeIntersection);
+
+				// Indirect Lighting (Task 6.6)
+				color += indirectLight;
 			}
 
 			sdlAux->putPixel(x, y, color);
@@ -141,4 +182,22 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector <Triangle >& triangl
 
 	}
 	return intersect;
+}
+
+vec3 DirectLight(const Intersection& i)
+{
+	vec3 n = glm::normalize(glm::cross(triangles[i.triangleIndex].v1 - triangles[i.triangleIndex].v0, triangles[i.triangleIndex].v2 - triangles[i.triangleIndex].v0));
+	vec3 r = glm::normalize(lightPos - i.position);
+	float r2 = glm::distance(lightPos, i.position);
+	float max = std::max(0.f, glm::dot(n, r));
+	vec3 D = lightPower / (4 * 3.14159265359f * r2);
+
+	// Surface Light Ray (Task 6.5)
+	Intersection shadowIntersection;
+	if (ClosestIntersection(i.position + 0.001f * n, r, triangles, shadowIntersection) && shadowIntersection.distance < r2)
+	{
+		return vec3(0, 0, 0);
+	}
+
+	return D * max;
 }

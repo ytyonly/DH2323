@@ -137,13 +137,17 @@ void Draw()
 
 			if (ClosestIntersection(cameraPos, dir, triangles, closeIntersection))
 			{
+				// Direct Lighting (Task 6.3)
+				// color = DirectLight(closeIntersection);
+
+				// Get the color of the closest intersection for pho (Task 6.4 and 6.6)
 				color = triangles[closeIntersection.triangleIndex].color;
 
-				// Direct Lighting (Task 6.3)
-				color *= (DirectLight(closeIntersection) + indirectLight);
+				// Diffuse Lighting (Task 6.4)
+				// color *= DirectLight(closeIntersection);
 
-				// Indirect Lighting (Task 6.6)
-				//color += indirectLight;
+				// Direct Lighting and Indirect Lighting (Task 6.6)
+				color *= (DirectLight(closeIntersection) + indirectLight);
 			}
 
 			sdlAux->putPixel(x, y, color);

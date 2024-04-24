@@ -41,6 +41,7 @@ struct Intersection
 void Update(void);
 void Draw(void);
 bool ClosestIntersection(vec3 start, vec3 dir, const vector <Triangle >& triangles, Intersection& closeIntersection);
+vec3 DirectLight(const Intersection& i);
 
 int main(int argc, char* argv[])
 {
@@ -136,14 +137,13 @@ void Draw()
 
 			if (ClosestIntersection(cameraPos, dir, triangles, closeIntersection))
 			{
-				// const Triangle& hit = triangles[closeIntersection.triangleIndex];
-				// color = hit.color;
+				color = triangles[closeIntersection.triangleIndex].color;
 
 				// Direct Lighting (Task 6.3)
-				color = DirectLight(closeIntersection);
+				color *= (DirectLight(closeIntersection) + indirectLight);
 
 				// Indirect Lighting (Task 6.6)
-				color += indirectLight;
+				//color += indirectLight;
 			}
 
 			sdlAux->putPixel(x, y, color);
@@ -186,7 +186,7 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector <Triangle >& triangl
 
 vec3 DirectLight(const Intersection& i)
 {
-	vec3 n = glm::normalize(glm::cross(triangles[i.triangleIndex].v1 - triangles[i.triangleIndex].v0, triangles[i.triangleIndex].v2 - triangles[i.triangleIndex].v0));
+	vec3 n = triangles[i.triangleIndex].normal;
 	vec3 r = glm::normalize(lightPos - i.position);
 	float r2 = glm::distance(lightPos, i.position);
 	float max = std::max(0.f, glm::dot(n, r));

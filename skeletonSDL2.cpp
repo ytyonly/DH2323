@@ -190,7 +190,7 @@ vec3 DirectLight(const Intersection& i)
 	vec3 r = glm::normalize(lightPos - i.position);
 	float r2 = glm::distance(lightPos, i.position);
 	float max = std::max(0.f, glm::dot(n, r));
-	vec3 B = lightPower / (4 * 3.14159265359f * r2^2);
+	vec3 B = lightPower / (4 * 3.14159265359f * r2);
 
 	// Surface Light Ray (Task 6.5)
 	Intersection shadowIntersection;

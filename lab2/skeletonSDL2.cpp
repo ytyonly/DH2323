@@ -140,10 +140,10 @@ void Draw()
 				color = triangles[closeIntersection.triangleIndex].color;
 
 				// Direct Lighting (Task 6.3)
-				color *= (DirectLight(closeIntersection) + indirectLight);
+				//color *= DirectLight(closeIntersection);
 
 				// Indirect Lighting (Task 6.6)
-				//color += indirectLight;
+				color *= (DirectLight(closeIntersection) + indirectLight);
 			}
 
 			sdlAux->putPixel(x, y, color);

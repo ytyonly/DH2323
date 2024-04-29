@@ -136,7 +136,7 @@ void Draw()
 
 void VertexShader(const vec3& v, ivec2& p) {
 
-	vec3 pos = (v - cameraPos) * R;
+	vec3 pos = (v - cameraPos);
 
 	p.x = focalLength * pos.x / pos.z + SCREEN_WIDTH / 2;
 	p.y = focalLength * pos.y / pos.z + SCREEN_HEIGHT / 2;

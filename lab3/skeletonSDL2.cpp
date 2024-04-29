@@ -16,13 +16,14 @@ using glm::ivec2;
 
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
-SDL2Aux *sdlAux;
+SDL2Aux* sdlAux;
 int t;
 vector<Triangle> triangles;
 float focalLength = SCREEN_HEIGHT / 2;
 vec3 cameraPos = vec3(0, 0, -3.001);
-mat3 R = mat3(1.0);
 float cameraSpeed = 0.01;
+float yaw = 0;
+mat3 R = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -49,6 +50,8 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+
+
 void Update(void)
 {
 	// Compute frame time:
@@ -59,16 +62,18 @@ void Update(void)
 
 	const Uint8* keystate = SDL_GetKeyboardState(NULL);
 	if (keystate[SDL_SCANCODE_UP]) {
-		// Move camera forward
+		cameraPos += vec3(0, 0, 1) * cameraSpeed * dt;
 	}
 	if (keystate[SDL_SCANCODE_DOWN]) {
-		// Move camera backward
+		cameraPos += vec3(0, 0, -1) * cameraSpeed * dt;
 	}
 	if (keystate[SDL_SCANCODE_LEFT]) {
-		// Move camera to the left
+		yaw -= 0.1;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 	}
 	if (keystate[SDL_SCANCODE_RIGHT]) {
-		// Move camera to the right
+		yaw += 0.1;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 	}
 	if (keystate[SDL_SCANCODE_W]) {
 		cameraPos += vec3(0, 0, 1) * cameraSpeed * dt;
@@ -121,9 +126,9 @@ void Draw()
 	for (int i = 0; i < triangles.size(); ++i)
 	{
 		vector<vec3> vertices(3);
-		vertices[0] = triangles[i].v0;
-		vertices[1] = triangles[i].v1;
-		vertices[2] = triangles[i].v2;
+		vertices[0] = triangles[i].v0 * R;
+		vertices[1] = triangles[i].v1 * R;
+		vertices[2] = triangles[i].v2 * R;
 		DrawPolygonEdges(vertices);
 	}
 	sdlAux->render();

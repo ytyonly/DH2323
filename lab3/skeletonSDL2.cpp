@@ -335,47 +335,6 @@ void VertexShader(const vec3& v, Pixel& p)
 	p.zinv = 1.0 / pos.z;
 }
 
-void ComputePolygonRows_(const vector<Pixel>& vertexPixels, vector<Pixel>& leftPixels, vector<Pixel>& rightPixels)
-{
-	int maxY = glm::max(glm::max(vertexPixels[0].y, vertexPixels[1].y), vertexPixels[2].y);
-	int minY = glm::min(glm::min(vertexPixels[0].y, vertexPixels[1].y), vertexPixels[2].y);
-	int rowAmount = maxY - minY + 1;
-	leftPixels.resize(rowAmount);
-	rightPixels.resize(rowAmount);
-	for (int i = 0; i < rowAmount; i++)
-	{
-		leftPixels[i].x = +numeric_limits<int>::max();
-		rightPixels[i].x = -numeric_limits<int>::max();
-
-		leftPixels[i].y = i + minY; //Starts from minimum and increases
-		rightPixels[i].y = i + minY;
-	}
-
-	for (int i = 0; i < vertexPixels.size(); ++i)
-	{
-		// convert pixel to ivec2
-		ivec2 p1 = ivec2(vertexPixels[i].x, vertexPixels[i].y);
-		ivec2 p2 = ivec2(vertexPixels[(i + 1) % vertexPixels.size()].x, vertexPixels[(i + 1) % vertexPixels.size()].y);
-		ivec2 delta = glm::abs(p2 - p1);
-		int pixels = max(delta.x, delta.y) + 1;
-		vector<ivec2> line(pixels);
-		Interpolate(p1, p2, line);
-		for (int j = 0; j < line.size(); j++) {
-			for (int k = 0; k < rowAmount; k++) {
-				if (leftPixels[k].y == line[j].y) {
-					if (leftPixels[k].x > line[j].x) {
-						leftPixels[k].x = line[j].x;
-					}
-					if (rightPixels[k].x < line[j].x) {
-						rightPixels[k].x = line[j].x;
-					}
-					break;
-				}
-			}
-		}
-	}
-}
-
 void Interpolate(Pixel a, Pixel b, vector<Pixel>& result)
 {
 	int N = result.size();

@@ -26,6 +26,11 @@ float yaw = 0;
 mat3 R = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
 vec3 currentColor;
 float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightPower = 1.1f * vec3(1, 1, 1);
+vec3 indirectLight = 0.5f * vec3(1, 1, 1);
+vec3 currentNormal;
+vec3 currentReflectance;
 
 // ----------------------------------------------------------------------------
 // STRUCT
@@ -34,6 +39,22 @@ struct Pixel
 	int x;
 	int y;
 	float zinv;
+	vec3 illumination;
+	vec3 pos3d;
+};
+
+struct Vertex
+{
+	vec3 position;
+	vec3 normal;
+	vec2 reflectance;
+};
+
+// Task 7.9
+
+struct Vertex
+{
+	vec3 position;
 };
 
 // ----------------------------------------------------------------------------
@@ -55,6 +76,10 @@ void ComputePolygonRows(const vector<Pixel>& vertexPixels, vector<Pixel>& leftPi
 void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels);
 void DrawPolygon_new(const vector<vec3>& vertices);
 void DrawLineSDL(Pixel a, Pixel b, vec3 color);
+// Overloading for Task 7
+void PixelShader(const Pixel& p);
+void DrawPolygon(const vector<Vertex>& vertices);
+void VertexShader(const Vertex v, Pixel& p);
 
 int main(int argc, char* argv[])
 {
@@ -162,22 +187,43 @@ void Draw()
 	// Task 6 code
 	sdlAux->clearPixels();
 	// init the depth buffer
-	for (int y = 0; y < SCREEN_HEIGHT; ++y)
-	{
-		for (int x = 0; x < SCREEN_WIDTH; ++x)
-		{
-			depthBuffer[y][x] = 0;
-		}
-	}
+	// for (int y = 0; y < SCREEN_HEIGHT; ++y)
+	// {
+	// 	for (int x = 0; x < SCREEN_WIDTH; ++x)
+	// 	{
+	// 		depthBuffer[y][x] = 0;
+	// 	}
+	// }
 
+	// for (int i = 0; i < triangles.size(); ++i)
+	// {
+	// 	currentColor = triangles[i].color;
+	// 	vector<vec3> vertices(3);
+	// 	vertices[0] = triangles[i].v0 * R;
+	// 	vertices[1] = triangles[i].v1 * R;
+	// 	vertices[2] = triangles[i].v2 * R;
+	// 	DrawPolygon_new(vertices);
+	// }
+
+	// Task 7 code
+	
 	for (int i = 0; i < triangles.size(); ++i)
 	{
 		currentColor = triangles[i].color;
-		vector<vec3> vertices(3);
-		vertices[0] = triangles[i].v0 * R;
-		vertices[1] = triangles[i].v1 * R;
-		vertices[2] = triangles[i].v2 * R;
-		DrawPolygon_new(vertices);
+		currentNormal = triangles[i].normal;
+		currentReflectance = 0.5;
+
+		Vertex vertices(3);
+		vertices[0].position = triangles[i].v0 * R;
+		vertices[1].position = triangles[i].v1 * R;
+		vertices[2].position = triangles[i].v2 * R;
+		vertices[0].normal = triangles[i].n0 * R;
+		vertices[1].normal = triangles[i].n1 * R;
+		vertices[2].normal = triangles[i].n2 * R;
+		vertices[0].reflectance = currentReflectance;
+		vertices[1].reflectance = currentReflectance;
+		vertices[2].reflectance = currentReflectance;
+		DrawPolygon(vertices);
 	}
 
 	sdlAux->render();
@@ -343,6 +389,7 @@ void Interpolate(Pixel a, Pixel b, vector<Pixel>& result)
 	float stepZInv = float(b.zinv - a.zinv) / max(N - 1, 1);
 
 	Pixel current = a;
+
 	for (int i = 0; i < N; ++i)
 	{
 		// Update each variable of pixel and avoid cumulative errors 
@@ -450,3 +497,53 @@ void DrawPolygon_new(const vector<vec3>& vertices)
 	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
 	DrawPolygonRows(leftPixels, rightPixels);
 }
+
+// ----------------------------------------------------------------------------
+// Task 7 (Rewritten Functions)
+
+void PixelShader(const Pixel& p)
+{
+	int x = p.x;
+	int y = p.y;
+	if (p.zinv > depthBuffer[y][x])
+	{
+		depthBuffer[y][x] = f.zinv;
+		sdlAux->putPixel(x, y, p.illumination);
+	}
+}
+
+void VertexShader(const Vertex v, Pixel& p)
+{
+	v.position = (v - cameraPos) * R;
+	p.zinv = 1.0 / pos.z;
+	p.x = focalLength * pos.x / pos.z + SCREEN_WIDTH / 2;
+	p.y = focalLength * pos.y / pos.z + SCREEN_HEIGHT / 2;
+
+	// Calculate illumination
+	vec3 r = glm::normalize(v.position - lightPos);
+	float dot = glm::dot(r, v.normal);
+	float intensity = glm::max(0.0f, dot);
+}
+
+void DrawPolygon(const vector<Vertex>& vertices)
+{
+	int V = vertices.size();
+	vector<ivec2> vertexPixels(V);
+	for (int i = 0; i < V; ++i)
+	{
+		VertexShader(vertices[i], vertexPixels[i]);
+	}
+	vector<ivec2> leftPixels;
+	vector<ivec2> rightPixels;
+	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
+	DrawPolygonRows(leftPixels, rightPixels);
+}
+
+void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels)
+{
+	for (int i = 0; i < leftPixels.size(); ++i)
+	{
+		PixelShader(leftPixels[i]);
+		PixelShader(rightPixels[i]);
+	}
+};

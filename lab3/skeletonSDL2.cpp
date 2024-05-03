@@ -220,9 +220,10 @@ void Draw()
 		vertices[0].normal = triangles[i].n0 * R;
 		vertices[1].normal = triangles[i].n1 * R;
 		vertices[2].normal = triangles[i].n2 * R;
-		vertices[0].reflectance = currentReflectance;
-		vertices[1].reflectance = currentReflectance;
-		vertices[2].reflectance = currentReflectance;
+		triangles[i].
+		vertices[0].reflectance = 0.5;
+		vertices[1].reflectance = 0.5;
+		vertices[2].reflectance = 0.5;
 		DrawPolygon(vertices);
 	}
 
@@ -514,7 +515,7 @@ void PixelShader(const Pixel& p)
 
 void VertexShader(const Vertex v, Pixel& p)
 {
-	v.position = (v - cameraPos) * R;
+	vec3 pos = (v.position - cameraPos) * R;
 	p.zinv = 1.0 / pos.z;
 	p.x = focalLength * pos.x / pos.z + SCREEN_WIDTH / 2;
 	p.y = focalLength * pos.y / pos.z + SCREEN_HEIGHT / 2;

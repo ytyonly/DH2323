@@ -31,6 +31,7 @@ vec3 lightPower = 1.1f * vec3(1, 1, 1);
 vec3 indirectLight = 0.5f * vec3(1, 1, 1);
 vec3 currentNormal;
 vec3 currentReflectance;
+vec3 indirectLightPowerPerArea = vec3(0.5, 0.5, 0.5);
 
 // ----------------------------------------------------------------------------
 // STRUCT
@@ -52,10 +53,10 @@ struct Vertex
 
 // Task 7.9
 
-struct Vertex
-{
-	vec3 position;
-};
+//struct Vertex
+//{
+//	vec3 position;
+//};
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -80,6 +81,7 @@ void DrawLineSDL(Pixel a, Pixel b, vec3 color);
 void PixelShader(const Pixel& p);
 void DrawPolygon(const vector<Vertex>& vertices);
 void VertexShader(const Vertex v, Pixel& p);
+//void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels);
 
 int main(int argc, char* argv[])
 {
@@ -211,19 +213,12 @@ void Draw()
 	{
 		currentColor = triangles[i].color;
 		currentNormal = triangles[i].normal;
-		currentReflectance = 0.5;
-
-		Vertex vertices(3);
+		currentReflectance = triangles[i].color;
+		vector<Vertex> vertices(3);
+		//Vertex vertices[3];
 		vertices[0].position = triangles[i].v0 * R;
 		vertices[1].position = triangles[i].v1 * R;
 		vertices[2].position = triangles[i].v2 * R;
-		vertices[0].normal = triangles[i].n0 * R;
-		vertices[1].normal = triangles[i].n1 * R;
-		vertices[2].normal = triangles[i].n2 * R;
-		triangles[i].
-		vertices[0].reflectance = 0.5;
-		vertices[1].reflectance = 0.5;
-		vertices[2].reflectance = 0.5;
 		DrawPolygon(vertices);
 	}
 
@@ -446,44 +441,44 @@ void ComputePolygonRows(const vector<Pixel>& vertexPixels, vector<Pixel>& leftPi
 	}
 }
 
-void DrawLineSDL(Pixel a, Pixel b, vec3 color)
-{
-	ivec2 delta;
-	delta.x = glm::abs(b.x - a.x);
-	delta.y = glm::abs(b.y - a.y);
-	int pixels = glm::max(delta.x, delta.y) + 1;
+//void DrawLineSDL(Pixel a, Pixel b, vec3 color)
+//{
+//	ivec2 delta;
+//	delta.x = glm::abs(b.x - a.x);
+//	delta.y = glm::abs(b.y - a.y);
+//	int pixels = glm::max(delta.x, delta.y) + 1;
+//
+//	vector<Pixel> line(pixels);
+//	Interpolate(a, b, line);
+//	for (int i = 0; i < pixels; i++)
+//	{
+//		int x = line[i].x;
+//		int y = line[i].y;
+//
+//		// Ensure the pixel is within the screen bounds
+//		if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
+//		{
+//			// Render color if closer to camera
+//			if (line[i].zinv > depthBuffer[y][x])
+//			{
+//				// Update depthBuffer with the current closest
+//				depthBuffer[y][x] = line[i].zinv;
+//				sdlAux->putPixel(x, y, currentColor);
+//
+//			}
+//		}
+//	}
+//}
 
-	vector<Pixel> line(pixels);
-	Interpolate(a, b, line);
-	for (int i = 0; i < pixels; i++)
-	{
-		int x = line[i].x;
-		int y = line[i].y;
-
-		// Ensure the pixel is within the screen bounds
-		if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
-		{
-			// Render color if closer to camera
-			if (line[i].zinv > depthBuffer[y][x])
-			{
-				// Update depthBuffer with the current closest
-				depthBuffer[y][x] = line[i].zinv;
-				sdlAux->putPixel(x, y, currentColor);
-
-			}
-		}
-	}
-}
-
-void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels)
-{
-	for (int i = 0; i < leftPixels.size(); ++i)
-	{
-		DrawLineSDL(leftPixels[i], rightPixels[i], currentColor);
-		//DrawLineSDL(ivec2(leftPixels[i].x, leftPixels[i].y), ivec2(rightPixels[i].x, rightPixels[i].y), currentColor);
-
-	}
-};
+//void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels)
+//{
+//	for (int i = 0; i < leftPixels.size(); ++i)
+//	{
+//		DrawLineSDL(leftPixels[i], rightPixels[i], currentColor);
+//		//DrawLineSDL(ivec2(leftPixels[i].x, leftPixels[i].y), ivec2(rightPixels[i].x, rightPixels[i].y), currentColor);
+//
+//	}
+//};
 
 void DrawPolygon_new(const vector<vec3>& vertices)
 {
@@ -508,7 +503,18 @@ void PixelShader(const Pixel& p)
 	int y = p.y;
 	if (p.zinv > depthBuffer[y][x])
 	{
-		depthBuffer[y][x] = f.zinv;
+		depthBuffer[y][x] = p.zinv;
+
+		vec3 n = currentNormal;
+		vec3 r = lightPos - p.pos3d;
+		vec3 rnorm = glm::normalize(r);
+		vec3 D;
+
+		float r_length = glm::length(r);
+
+		D = vec3(lightPower * glm::max(glm::dot(rnorm, n), 0.0f)) / float(4.0f * glm::pow(r_length, 2.0f) * 3.14159265359);
+		vec3 illumination = currentReflectance * (D + currentReflectance);
+		
 		sdlAux->putPixel(x, y, p.illumination);
 	}
 }
@@ -529,13 +535,13 @@ void VertexShader(const Vertex v, Pixel& p)
 void DrawPolygon(const vector<Vertex>& vertices)
 {
 	int V = vertices.size();
-	vector<ivec2> vertexPixels(V);
+	vector<Pixel> vertexPixels(V);
 	for (int i = 0; i < V; ++i)
 	{
 		VertexShader(vertices[i], vertexPixels[i]);
 	}
-	vector<ivec2> leftPixels;
-	vector<ivec2> rightPixels;
+	vector<Pixel> leftPixels;
+	vector<Pixel> rightPixels;
 	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
 	DrawPolygonRows(leftPixels, rightPixels);
 }
@@ -544,7 +550,23 @@ void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& right
 {
 	for (int i = 0; i < leftPixels.size(); ++i)
 	{
-		PixelShader(leftPixels[i]);
-		PixelShader(rightPixels[i]);
+		DrawLineSDL(leftPixels[i], rightPixels[i], currentColor);
+
 	}
 };
+
+void DrawLineSDL(Pixel a, Pixel b, vec3 color)
+{
+	ivec2 delta;
+	delta.x = glm::abs(b.x - a.x);
+	delta.y = glm::abs(b.y - a.y);
+	int pixels = glm::max(delta.x, delta.y) + 1;
+
+	vector<Pixel> line(pixels);
+	Interpolate(a, b, line);
+	for (int i = 0; i < pixels; i++)
+	{
+		void PixelShader(const Pixel & p);
+
+	}
+}

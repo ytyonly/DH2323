@@ -31,6 +31,8 @@ public class SPH : MonoBehaviour
     public Vector3 spawnCenter;
     public float particleRadius = 0.1f;
 
+    public float spawnJitter = 0.2f;
+
     [Header("Particle Rendering")]
     public Mesh particleMesh;
     public float particleRenderSize = 8f;
@@ -80,6 +82,7 @@ public class SPH : MonoBehaviour
                 {
 
                     Vector3 spawnPosition = spawnPoint + new Vector3(x * particleRadius * 2, y * particleRadius * 2, z * particleRadius * 2);
+                    spawnPosition += Random.onUnitSphere * particleRadius * spawnJitter;
                     Debug.Log(spawnPosition);
 
                     Particle p = new Particle

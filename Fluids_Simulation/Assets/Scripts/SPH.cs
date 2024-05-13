@@ -53,6 +53,8 @@ public class SPH : MonoBehaviour
     private ComputeBuffer _argsBuffer;
     private ComputeBuffer _particlesBuffer;
     private int integrateKernel;
+    private int computeForceKernel;
+    private int densityPressureKernel;
 
     private static readonly int SizeProperty = Shader.PropertyToID("_size");
     private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_particlesBuffer");
@@ -78,6 +80,63 @@ public class SPH : MonoBehaviour
         _particlesBuffer.SetData(particles);
 
         SetupComputeBuffers();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        material.SetFloat(SizeProperty, particleRenderSize);
+        material.SetBuffer(ParticlesBufferProperty, _particlesBuffer);
+        //Debug.Log(_particlesBuffer);
+
+        if (showSphere)
+        {
+            Graphics.DrawMeshInstancedIndirect(
+                particleMesh,
+                0,
+                material,
+                new Bounds(Vector3.zero, boxSize),
+                _argsBuffer,
+                castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
+        );
+        }
+
+    }
+
+    private void SetupComputeBuffers()
+    {
+        integrateKernel = shader.FindKernel("Integrate");
+        computeForceKernel = shader.FindKernel("ComputeForces");
+        densityPressureKernel = shader.FindKernel("ComputeDensityPressure");
+
+        shader.SetInt("particleLength", totalParticles);
+        shader.SetFloat("particleMass", particleMass);
+        shader.SetFloat("viscosity", viscosity);
+        shader.SetFloat("gasConstant", gasConstant);
+        shader.SetFloat("restDensity", restingDensity);
+        shader.SetFloat("boundDamping", boundDamping);
+        shader.SetFloat("pi", Mathf.PI);
+        shader.SetVector("boxSize", boxSize);
+
+        shader.SetFloat("radius", particleRadius);
+        shader.SetFloat("radius2", particleRadius * particleRadius);
+        shader.SetFloat("radius3", particleRadius * particleRadius * particleRadius);
+        shader.SetFloat("radius4", particleRadius * particleRadius * particleRadius * particleRadius);
+        shader.SetFloat("radius5", particleRadius * particleRadius * particleRadius * particleRadius * particleRadius);
+
+        shader.SetBuffer(integrateKernel, "_particles", _particlesBuffer);
+        shader.SetBuffer(computeForceKernel, "_particles", _particlesBuffer);
+        shader.SetBuffer(densityPressureKernel, "_particles", _particlesBuffer);
+    }
+
+    void FixedUpdate()
+    {
+        shader.SetVector("boxSize", boxSize);
+        shader.SetFloat("timestep", timestep);
+
+        shader.Dispatch(densityPressureKernel, totalParticles / 100, 1, 1);
+        shader.Dispatch(computeForceKernel, totalParticles / 100, 1, 1);
+        shader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
     }
 
     private void SpawnParticlesInBox()
@@ -120,62 +179,5 @@ public class SPH : MonoBehaviour
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireCube(spawnCenter, new Vector3(0.1f, 0.1f, 0.1f));
         }
-    }
-
-    //// Start is called before the first frame update
-    //void Start()
-    //{
-
-    //}
-
-    // Update is called once per frame
-    void Update()
-    {
-        material.SetFloat(SizeProperty, particleRenderSize);
-        material.SetBuffer(ParticlesBufferProperty, _particlesBuffer);
-        //Debug.Log(_particlesBuffer);
-
-        if (showSphere)
-        {
-            Graphics.DrawMeshInstancedIndirect(
-                particleMesh,
-                0,
-                material,
-                new Bounds(Vector3.zero, boxSize),
-                _argsBuffer,
-                castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
-        );
-        }
-
-    }
-
-    void FixedUpdate()
-    {
-        shader.SetVector("boxSize", boxSize);
-        shader.SetFloat("timestep", timestep);
-
-        shader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
-    }
-
-    private void SetupComputeBuffers()
-    {
-        integrateKernel = shader.FindKernel("Integrate");
-
-        shader.SetInt("particleLength", totalParticles);
-        shader.SetFloat("particleMass", particleMass);
-        shader.SetFloat("viscosity", viscosity);
-        shader.SetFloat("gasConstant", gasConstant);
-        shader.SetFloat("restDensity", restingDensity);
-        shader.SetFloat("boundDamping", boundDamping);
-        shader.SetFloat("pi", Mathf.PI);
-        shader.SetVector("boxSize", boxSize);
-
-        shader.SetFloat("radius", particleRadius);
-        shader.SetFloat("radius2", particleRadius * particleRadius);
-        shader.SetFloat("radius3", particleRadius * particleRadius * particleRadius);
-        shader.SetFloat("radius4", particleRadius * particleRadius * particleRadius * particleRadius);
-        shader.SetFloat("radius5", particleRadius * particleRadius * particleRadius * particleRadius * particleRadius);
-
-        shader.SetBuffer(integrateKernel, "_particles", _particlesBuffer);
     }
 }

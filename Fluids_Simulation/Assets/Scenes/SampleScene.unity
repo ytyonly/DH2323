@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.2257134, b: 0.30692226, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -123,63 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &45734871
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 45734873}
-  - component: {fileID: 45734872}
-  m_Layer: 0
-  m_Name: SPH2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &45734872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 45734871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ddbcaccb07667a40afc1fbfcee9b38f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wireframeSpheres: 0
-  boxSize: {x: 0, y: 0, z: 0}
-  spawnBoxCenter: {x: 0, y: 0, z: 0}
-  spawnBox: {x: 0, y: 0, z: 0}
-  particleRadius: 0
-  gravity: {x: 0, y: -9.81, z: 0}
-  boundDamping: -0.5
-  viscosity: 200
-  particleMass: 2.5
-  gasConstant: 2000
-  restingDensity: 300
-  timeScale: 0
-  scalingConstant: 0.004
---- !u!4 &45734873
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 45734871}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -274,61 +217,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &775816409
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 775816411}
-  - component: {fileID: 775816410}
-  m_Layer: 0
-  m_Name: SPH3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &775816410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 775816409}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56bd169ef34d0104d85a036f802a19c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showSpheres: 0
-  numToSpawn: {x: 10, y: 10, z: 10}
-  boxSize: {x: 4, y: 10, z: 3}
-  spawnBoxCenter: {x: 0, y: 3, z: 0}
-  spawnBox: {x: 4, y: 2, z: 1.5}
-  particleRadius: 0.1
-  particleMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  particleRenderSize: 16
-  material: {fileID: 5561349426305759274, guid: 280e91caaf842b6499e9381308f6e72f, type: 3}
-  shader: {fileID: 7200000, guid: 0d68e770f9440e04fb269cf2ad44849b, type: 3}
-  particles: []
---- !u!4 &775816411
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 775816409}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.90174, y: -2.4520636, z: -16.593113}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,13 +331,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showSphere: 1
-  numToSpawn: {x: 2, y: 2, z: 2}
-  boxSize: {x: 16, y: 16, z: 16}
-  spawnCenter: {x: 1.15, y: 0, z: 0}
+  numToSpawn: {x: 10, y: 10, z: 10}
+  boxSize: {x: 4, y: 6, z: 4}
+  spawnCenter: {x: 0, y: 1, z: 0}
   particleRadius: 0.1
-  particleMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  particleMesh: {fileID: 2540817853737639666, guid: 280e91caaf842b6499e9381308f6e72f, type: 3}
   particleRenderSize: 8
-  material: {fileID: 5561349426305759274, guid: 280e91caaf842b6499e9381308f6e72f, type: 3}
+  material: {fileID: 2100000, guid: 8b6832d93f9bacc4db479c4f198980a3, type: 2}
   shader: {fileID: 0}
   particles: []
 --- !u!4 &1584794259
@@ -460,7 +348,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1584794257}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.04, y: -0.33, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -42,8 +42,17 @@ public class SPH : MonoBehaviour
     public ComputeShader shader;
     public Particle[] particles;
 
+    [Header("Fluid Constants")]
+    public float boundDamping = -0.3f;
+    public float viscosity = 0.003f;
+    public float particleMass = 1f;
+    public float gasConstant = 2f;
+    public float restingDensity = 1f;
+    public float timestep = 0.007f;
+
     private ComputeBuffer _argsBuffer;
     private ComputeBuffer _particlesBuffer;
+    private int integrateKernel;
 
     private static readonly int SizeProperty = Shader.PropertyToID("_size");
     private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_particlesBuffer");
@@ -67,6 +76,8 @@ public class SPH : MonoBehaviour
         Debug.Log(particles.Count());
 
         _particlesBuffer.SetData(particles);
+
+        SetupComputeBuffers();
     }
 
     private void SpawnParticlesInBox()
@@ -136,5 +147,35 @@ public class SPH : MonoBehaviour
         );
         }
 
+    }
+
+    void FixedUpdate()
+    {
+        shader.SetVector("boxSize", boxSize);
+        shader.SetFloat("timestep", timestep);
+
+        shader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+    }
+
+    private void SetupComputeBuffers()
+    {
+        integrateKernel = shader.FindKernel("Integrate");
+
+        shader.SetInt("particleLength", totalParticles);
+        shader.SetFloat("particleMass", particleMass);
+        shader.SetFloat("viscosity", viscosity);
+        shader.SetFloat("gasConstant", gasConstant);
+        shader.SetFloat("restDensity", restingDensity);
+        shader.SetFloat("boundDamping", boundDamping);
+        shader.SetFloat("pi", Mathf.PI);
+        shader.SetVector("boxSize", boxSize);
+
+        shader.SetFloat("radius", particleRadius);
+        shader.SetFloat("radius2", particleRadius * particleRadius);
+        shader.SetFloat("radius3", particleRadius * particleRadius * particleRadius);
+        shader.SetFloat("radius4", particleRadius * particleRadius * particleRadius * particleRadius);
+        shader.SetFloat("radius5", particleRadius * particleRadius * particleRadius * particleRadius * particleRadius);
+
+        shader.SetBuffer(integrateKernel, "_particles", _particlesBuffer);
     }
 }

@@ -27,6 +27,13 @@ mat3 R = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
 vec3 currentColor;
 float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightPower = 4.1f * vec3(1, 1, 1);
+vec3 indirectLightPowerPerArea = 0.5f * vec3(1, 1, 1);
+
+vec3 currentNormal;
+vec3 currentReflectance;
+
 // ----------------------------------------------------------------------------
 // STRUCT
 struct Pixel
@@ -34,6 +41,13 @@ struct Pixel
 	int x;
 	int y;
 	float zinv;
+	vec3 illumination;
+	vec3 pos3d;
+};
+
+struct Vertex
+{
+	vec3 position;
 };
 
 // ----------------------------------------------------------------------------
@@ -41,6 +55,7 @@ struct Pixel
 
 void Update(void);
 void Draw(void);
+/*
 void VertexShader(const vec3& v, ivec2& p);
 void Interpolate(ivec2 a, ivec2 b, vector<ivec2>& result);
 void DrawLineSDL(ivec2 a, ivec2 b, vec3 color);
@@ -48,13 +63,16 @@ void DrawPolygonEdges(const vector<vec3>& vertices);
 void ComputePolygonRows(const vector<ivec2>& vertexPixels, vector<ivec2>& leftPixels, vector<ivec2>& rightPixels);
 void DrawRows(const vector<ivec2>& leftPixels, const vector<ivec2>& rightPixels);
 void DrawPolygon(const vector<vec3>& vertices);
+*/
 // overloading for Task 6
-void VertexShader(const vec3& v, Pixel& p);
+void VertexShader(const Vertex& v, Pixel& p);
 void Interpolate(Pixel a, Pixel b, vector<Pixel>& result);
 void ComputePolygonRows(const vector<Pixel>& vertexPixels, vector<Pixel>& leftPixels, vector<Pixel>& rightPixels);
 void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& rightPixels);
-void DrawPolygon_new(const vector<vec3>& vertices);
+void DrawPolygon_new(const vector<Vertex>& vertices);
 void DrawLineSDL(Pixel a, Pixel b, vec3 color);
+
+void PixelShader(const Pixel& p);
 
 int main(int argc, char* argv[])
 {
@@ -172,11 +190,15 @@ void Draw()
 
 	for (int i = 0; i < triangles.size(); ++i)
 	{
+		vector<Vertex> vertices(3);
+		vertices[0].position = triangles[i].v0;
+		vertices[1].position = triangles[i].v1;
+		vertices[2].position = triangles[i].v2;
+
 		currentColor = triangles[i].color;
-		vector<vec3> vertices(3);
-		vertices[0] = triangles[i].v0 * R;
-		vertices[1] = triangles[i].v1 * R;
-		vertices[2] = triangles[i].v2 * R;
+		currentNormal = triangles[i].normal;
+		currentReflectance = triangles[i].color;
+
 		DrawPolygon_new(vertices);
 	}
 
@@ -184,9 +206,10 @@ void Draw()
 
 }
 
+/*
 void VertexShader(const vec3& v, ivec2& p) {
 
-	vec3 pos = (v - cameraPos);
+	vec3 pos = (v - cameraPos) * R;
 
 	p.x = focalLength * pos.x / pos.z + SCREEN_WIDTH / 2;
 	p.y = focalLength * pos.y / pos.z + SCREEN_HEIGHT / 2;
@@ -321,18 +344,20 @@ void DrawPolygon(const vector<vec3>& vertices)
 	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
 	DrawPolygonRows(leftPixels, rightPixels);
 }
+*/
 
 
 // ----------------------------------------------------------------------------
 // Below is the function rewritten for Task 6
 
-void VertexShader(const vec3& v, Pixel& p)
+void VertexShader(const Vertex& v, Pixel& p)
 {
-	vec3 pos = (v - cameraPos);
-
+	vec3 pos = (v.position - cameraPos) * R;
+	p.zinv = 1.0 / pos.z;
 	p.x = focalLength * pos.x / pos.z + SCREEN_WIDTH / 2;
 	p.y = focalLength * pos.y / pos.z + SCREEN_HEIGHT / 2;
-	p.zinv = 1.0 / pos.z;
+
+	p.pos3d = v.position;
 }
 
 void Interpolate(Pixel a, Pixel b, vector<Pixel>& result)
@@ -342,6 +367,12 @@ void Interpolate(Pixel a, Pixel b, vector<Pixel>& result)
 	float stepY = float(b.y - a.y) / max(N - 1, 1);
 	float stepZInv = float(b.zinv - a.zinv) / max(N - 1, 1);
 
+	a.pos3d = a.pos3d * a.zinv;
+	b.pos3d = b.pos3d * b.zinv;
+
+	vec3 stepPos3d = (b.pos3d - a.pos3d) / (float)max(N - 1, 1);
+	vec3 stepIllumination = (b.illumination - a.illumination) / (float)max(N - 1, 1);
+
 	Pixel current = a;
 	for (int i = 0; i < N; ++i)
 	{
@@ -349,6 +380,8 @@ void Interpolate(Pixel a, Pixel b, vector<Pixel>& result)
 		current.x = a.x + (float)i * stepX;
 		current.y = a.y + (float)i * stepY;
 		current.zinv = a.zinv + (float)i * stepZInv;
+		current.illumination += stepIllumination;
+		current.pos3d += stepPos3d;
 		result[i] = current;
 	}
 }
@@ -385,10 +418,12 @@ void ComputePolygonRows(const vector<Pixel>& vertexPixels, vector<Pixel>& leftPi
 				if (leftPixels[k].y == line[j].y) {
 					if (leftPixels[k].x > line[j].x) {
 						leftPixels[k].x = line[j].x;
+						leftPixels[k].pos3d = line[j].pos3d;
 						leftPixels[k].zinv = line[j].zinv;
 					}
 					if (rightPixels[k].x < line[j].x) {
 						rightPixels[k].x = line[j].x;
+						rightPixels[k].pos3d = line[j].pos3d;
 						rightPixels[k].zinv = line[j].zinv;
 					}
 					break;
@@ -415,14 +450,7 @@ void DrawLineSDL(Pixel a, Pixel b, vec3 color)
 		// Ensure the pixel is within the screen bounds
 		if (x >= 0 && x < SCREEN_WIDTH && y >= 0 && y < SCREEN_HEIGHT)
 		{
-			// Render color if closer to camera
-			if (line[i].zinv > depthBuffer[y][x])
-			{
-				// Update depthBuffer with the current closest
-				depthBuffer[y][x] = line[i].zinv;
-				sdlAux->putPixel(x, y, currentColor);
-
-			}
+			PixelShader(line[i]);
 		}
 	}
 }
@@ -437,7 +465,7 @@ void DrawPolygonRows(const vector<Pixel>& leftPixels, const vector<Pixel>& right
 	}
 };
 
-void DrawPolygon_new(const vector<vec3>& vertices)
+void DrawPolygon_new(const vector<Vertex>& vertices)
 {
 	int V = vertices.size();
 	vector<Pixel> vertexPixels(V);
@@ -449,4 +477,22 @@ void DrawPolygon_new(const vector<vec3>& vertices)
 	vector<Pixel> rightPixels;
 	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
 	DrawPolygonRows(leftPixels, rightPixels);
+}
+
+void PixelShader(const Pixel& p)
+{
+	int x = p.x;
+	int y = p.y;
+	if (p.zinv > depthBuffer[y][x]) {
+		depthBuffer[y][x] = p.zinv;
+		//  Per Pixel Illumination
+		vec3 dir = glm::normalize(lightPos - p.pos3d);
+		float r = glm::distance(lightPos, p.pos3d);
+		float area = 4 * 3.1415 * r * r;
+		float angle = glm::dot(dir, currentNormal);
+		if (angle < 0) angle = 0;
+		vec3 D = lightPower * angle / area;
+		vec3 total_reflectance = currentReflectance * (D + indirectLightPowerPerArea);
+		sdlAux->putPixel(x, y, total_reflectance);
+	}
 }

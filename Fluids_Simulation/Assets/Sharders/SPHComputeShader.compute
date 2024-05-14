@@ -2,14 +2,14 @@
 #pragma kernel ComputeForces //Forces for the particles
 #pragma kernel ComputeDensityPressure //Density/pressure for the particles
 
-public struct Particle
+struct Particle
 {
     float pressure;
     float density;
     float3 currentForce;
     float3 velocity;
     float3 position;
-}
+};
 
 RWStructuredBuffer<Particle> _particles;
 

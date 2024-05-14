@@ -7,7 +7,7 @@ using System.Linq;
 public class SPH : MonoBehaviour
 {
     [System.Serializable]
-    //[StructLayout(LayoutKind.Sequential, Size = 44)]
+    [StructLayout(LayoutKind.Sequential, Size = 44)]
     public struct Particle
     {
         public float pressure;
@@ -109,6 +109,10 @@ public class SPH : MonoBehaviour
         computeForceKernel = shader.FindKernel("ComputeForces");
         densityPressureKernel = shader.FindKernel("ComputeDensityPressure");
 
+        Debug.Log($"Integrate Kernel: {integrateKernel}");
+        Debug.Log($"ComputeForces Kernel: {computeForceKernel}");
+        Debug.Log($"ComputeDensityPressure Kernel: {densityPressureKernel}");
+        
         shader.SetInt("particleLength", totalParticles);
         shader.SetFloat("particleMass", particleMass);
         shader.SetFloat("viscosity", viscosity);
@@ -134,9 +138,10 @@ public class SPH : MonoBehaviour
         shader.SetVector("boxSize", boxSize);
         shader.SetFloat("timestep", timestep);
 
-        shader.Dispatch(densityPressureKernel, totalParticles / 100, 1, 1);
-        shader.Dispatch(computeForceKernel, totalParticles / 100, 1, 1);
-        shader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+        int threadGroups = Mathf.CeilToInt(totalParticles / 100.0f);
+        shader.Dispatch(densityPressureKernel, threadGroups, 1, 1);
+        shader.Dispatch(computeForceKernel, threadGroups, 1, 1);
+        shader.Dispatch(integrateKernel, threadGroups, 1, 1);
     }
 
     private void SpawnParticlesInBox()

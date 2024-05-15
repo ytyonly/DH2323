@@ -18,6 +18,7 @@ public class SPH : MonoBehaviour
     }
 
     [Header("General")]
+    public Transform collisionSphere;
     public bool showSphere = true;
     public Vector3Int numToSpawn = new Vector3Int(10, 10, 10);
     private int totalParticles
@@ -137,6 +138,8 @@ public class SPH : MonoBehaviour
     {
         shader.SetVector("boxSize", boxSize);
         shader.SetFloat("timestep", timestep);
+        shader.SetVector("spherePos", collisionSphere.transform.position);
+        shader.SetFloat("sphereRadius", collisionSphere.transform.localScale.x / 2);
 
         int threadGroups = Mathf.CeilToInt(totalParticles / 100.0f);
         shader.Dispatch(densityPressureKernel, threadGroups, 1, 1);

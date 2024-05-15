@@ -51,7 +51,7 @@ public class SPH : MonoBehaviour
     public float timestep = 0.007f;
 
     private ComputeBuffer _argsBuffer;
-    private ComputeBuffer _particlesBuffer;
+    public ComputeBuffer _particlesBuffer;
     private int integrateKernel;
     private int computeForceKernel;
     private int densityPressureKernel;
@@ -112,7 +112,7 @@ public class SPH : MonoBehaviour
         Debug.Log($"Integrate Kernel: {integrateKernel}");
         Debug.Log($"ComputeForces Kernel: {computeForceKernel}");
         Debug.Log($"ComputeDensityPressure Kernel: {densityPressureKernel}");
-        
+
         shader.SetInt("particleLength", totalParticles);
         shader.SetFloat("particleMass", particleMass);
         shader.SetFloat("viscosity", viscosity);

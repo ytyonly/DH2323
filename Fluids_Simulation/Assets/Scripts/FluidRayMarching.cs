@@ -5,11 +5,11 @@ using UnityEngine;
 public class FluidRayMarching : MonoBehaviour
 {
 
-    public struct Particle
+    public struct Sphere
     {
         public float pressure;
         public float density;
-        public Vector3 currentForce;
+        public Vector3 Force;
         public Vector3 velocity;
         public Vector3 position;
     }
@@ -58,8 +58,8 @@ public class FluidRayMarching : MonoBehaviour
     private void SpawnParticlesInBox()
     {
         _particlesBuffer = new ComputeBuffer(1, 44);
-        _particlesBuffer.SetData(new Particle[] {
-        new Particle {
+        _particlesBuffer.SetData(new Sphere[] {
+        new Sphere {
         position = new Vector3(0,0,0)
        }});
 
@@ -71,7 +71,7 @@ public class FluidRayMarching : MonoBehaviour
         InitRenderTexture();
         raymarching.SetBuffer(0, "particles", sph._particlesBuffer);
         raymarching.SetInt("numParticles", sph.particles.Length);
-        raymarching.SetFloat("particleRadius", viewRadius);
+        raymarching.SetFloat("sphereRadius", viewRadius);
         raymarching.SetFloat("blendStrength", blendStrength);
         raymarching.SetVector("waterColor", waterColor);
         raymarching.SetVector("_AmbientLight", ambientLight);

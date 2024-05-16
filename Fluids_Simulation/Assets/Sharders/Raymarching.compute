@@ -11,18 +11,18 @@ static const float maxDst = 80;
 static const float epsilon = 0.001f;
 static const float shadowBias = epsilon * 50;
 
-struct Particle
+struct Sphere
 {
     float pressure;
     float density;
-    float3 currentForce;
+    float3 Force;
     float3 velocity;
     float3 position;
 };
 
-StructuredBuffer<Particle> particles;
+StructuredBuffer<Sphere> particles;
 int numParticles;
-float particleRadius;
+float sphereRadius;
 float blendStrength;
 float3 waterColor;
 float3 _Light;
@@ -72,9 +72,9 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB) {
     return float4(colour,dst);
 }
 
-float GetShapeDistance(Particle particle, float3 eye) {
+float GetShapeDistance(Sphere particle, float3 eye) {
    
-    return SphereDistance(eye, particle.position, particleRadius);
+    return SphereDistance(eye, particle.position, sphereRadius);
     return maxDst;
 }
 
@@ -84,7 +84,7 @@ float4 SceneInfo(float3 eye) {
     float3 globalColour = waterColor;
     
     for (int i = 0; i < numParticles; i ++) {
-        Particle particle = particles[i];
+        Sphere particle = particles[i];
 
         float localDst = GetShapeDistance(particle,eye);
         float3 localColour = waterColor;

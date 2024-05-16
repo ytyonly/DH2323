@@ -8,39 +8,39 @@ public class SPH : MonoBehaviour
 {
     [System.Serializable]
     [StructLayout(LayoutKind.Sequential, Size = 44)]
-    public struct Particle
+    public struct Sphere
     {
         public float pressure;
         public float density;
-        public Vector3 currentForce;
+        public Vector3 Force;
         public Vector3 velocity;
         public Vector3 position;
     }
 
-    [Header("General")]
-    public bool showSphere = true;
-    public Vector3Int numToSpawn = new Vector3Int(10, 10, 10);
-    private int totalParticles
+    [Header("Spawn Settings")]
+    public bool visibleSpheres = true;
+    public Vector3Int sphereAmount = new Vector3Int(10, 10, 10);
+    private int totalSpheres
     {
         get
         {
-            return numToSpawn.x * numToSpawn.y * numToSpawn.z;
+            return sphereAmount.x * sphereAmount.y * sphereAmount.z;
         }
     }
-    public Vector3 boxSize = new Vector3(4, 10, 3);
-    public Vector3 spawnCenter;
-    public float particleRadius = 0.1f;
+    public Vector3 cubeSize = new Vector3(4, 10, 3);
+    public Vector3 spawnPoint;
+    public float sphereRadius = 0.1f;
 
-    public float spawnJitter = 0.2f;
+    public float spawnRandomness = 0.2f;
 
-    [Header("Particle Rendering")]
+    [Header("Sphere Rendering")]
     public Mesh particleMesh;
     public float particleRenderSize = 8f;
     public Material material;
 
     [Header("Compute")]
     public ComputeShader shader;
-    public Particle[] particles;
+    public Sphere[] particles;
 
     [Header("Fluid Constants")]
     public float boundDamping = -0.3f;
@@ -66,7 +66,7 @@ public class SPH : MonoBehaviour
         uint[] args =
         {
             particleMesh.GetIndexCount(0),
-            (uint)totalParticles,
+            (uint)totalSpheres,
             particleMesh.GetIndexStart(0),
             particleMesh.GetBaseVertex(0),
             0
@@ -74,7 +74,7 @@ public class SPH : MonoBehaviour
         _argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         _argsBuffer.SetData(args);
 
-        _particlesBuffer = new ComputeBuffer(totalParticles, 44);
+        _particlesBuffer = new ComputeBuffer(totalSpheres, 44);
         Debug.Log(particles.Count());
 
         _particlesBuffer.SetData(particles);
@@ -89,13 +89,13 @@ public class SPH : MonoBehaviour
         material.SetBuffer(ParticlesBufferProperty, _particlesBuffer);
         //Debug.Log(_particlesBuffer);
 
-        if (showSphere)
+        if (visibleSpheres)
         {
             Graphics.DrawMeshInstancedIndirect(
                 particleMesh,
                 0,
                 material,
-                new Bounds(Vector3.zero, boxSize),
+                new Bounds(Vector3.zero, cubeSize),
                 _argsBuffer,
                 castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
         );
@@ -113,20 +113,20 @@ public class SPH : MonoBehaviour
         Debug.Log($"ComputeForces Kernel: {computeForceKernel}");
         Debug.Log($"ComputeDensityPressure Kernel: {densityPressureKernel}");
 
-        shader.SetInt("particleLength", totalParticles);
+        shader.SetInt("particleLength", totalSpheres);
         shader.SetFloat("particleMass", particleMass);
         shader.SetFloat("viscosity", viscosity);
         shader.SetFloat("gasConstant", gasConstant);
         shader.SetFloat("restDensity", restingDensity);
         shader.SetFloat("boundDamping", boundDamping);
         shader.SetFloat("pi", Mathf.PI);
-        shader.SetVector("boxSize", boxSize);
+        shader.SetVector("cubeSize", cubeSize);
 
-        shader.SetFloat("radius", particleRadius);
-        shader.SetFloat("radius2", particleRadius * particleRadius);
-        shader.SetFloat("radius3", particleRadius * particleRadius * particleRadius);
-        shader.SetFloat("radius4", particleRadius * particleRadius * particleRadius * particleRadius);
-        shader.SetFloat("radius5", particleRadius * particleRadius * particleRadius * particleRadius * particleRadius);
+        shader.SetFloat("radius", sphereRadius);
+        shader.SetFloat("radius2", sphereRadius * sphereRadius);
+        shader.SetFloat("radius3", sphereRadius * sphereRadius * sphereRadius);
+        shader.SetFloat("radius4", sphereRadius * sphereRadius * sphereRadius * sphereRadius);
+        shader.SetFloat("radius5", sphereRadius * sphereRadius * sphereRadius * sphereRadius * sphereRadius);
 
         shader.SetBuffer(integrateKernel, "_particles", _particlesBuffer);
         shader.SetBuffer(computeForceKernel, "_particles", _particlesBuffer);
@@ -135,10 +135,10 @@ public class SPH : MonoBehaviour
 
     void FixedUpdate()
     {
-        shader.SetVector("boxSize", boxSize);
+        shader.SetVector("cubeSize", cubeSize);
         shader.SetFloat("timestep", timestep);
 
-        int threadGroups = Mathf.CeilToInt(totalParticles / 100.0f);
+        int threadGroups = Mathf.CeilToInt(totalSpheres / 100.0f);
         shader.Dispatch(densityPressureKernel, threadGroups, 1, 1);
         shader.Dispatch(computeForceKernel, threadGroups, 1, 1);
         shader.Dispatch(integrateKernel, threadGroups, 1, 1);
@@ -146,21 +146,20 @@ public class SPH : MonoBehaviour
 
     private void SpawnParticlesInBox()
     {
-        Vector3 spawnPoint = spawnCenter;
-        List<Particle> _particles = new List<Particle>();
+        List<Sphere> _particles = new List<Sphere>();
 
-        for (int x = 0; x < numToSpawn.x; x++)
+        for (int x = 0; x < sphereAmount.x; x++)
         {
-            for (int y = 0; y < numToSpawn.y; y++)
+            for (int y = 0; y < sphereAmount.y; y++)
             {
-                for (int z = 0; z < numToSpawn.z; z++)
+                for (int z = 0; z < sphereAmount.z; z++)
                 {
 
-                    Vector3 spawnPosition = spawnPoint + new Vector3(x * particleRadius * 2, y * particleRadius * 2, z * particleRadius * 2);
-                    spawnPosition += Random.onUnitSphere * particleRadius * spawnJitter;
+                    Vector3 spawnPosition = spawnPoint + new Vector3(x * sphereRadius * 2, y * sphereRadius * 2, z * sphereRadius * 2);
+                    spawnPosition += Random.onUnitSphere * sphereRadius * spawnRandomness;
                     Debug.Log(spawnPosition);
 
-                    Particle p = new Particle
+                    Sphere p = new Sphere
                     {
                         position = spawnPosition
                     };
@@ -177,12 +176,12 @@ public class SPH : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.black;
-        Gizmos.DrawWireCube(Vector3.zero, boxSize);
+        Gizmos.DrawWireCube(Vector3.zero, cubeSize);
 
         if (!Application.isPlaying)
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(spawnCenter, new Vector3(0.1f, 0.1f, 0.1f));
+            Gizmos.DrawWireCube(spawnPoint, new Vector3(0.1f, 0.1f, 0.1f));
         }
     }
 }

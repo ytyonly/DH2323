@@ -25,18 +25,18 @@ Shader "Instanced/GridTestParticleShader" {
 				float2 uv_MainTex;
 			};
 
-			struct Particle
+			struct Sphere
 			{
                 float pressure;
                 float density;
-                float3 currentForce;
+                float3 Force;
                 float3 velocity;
 				float3 position;
 				
 			};
 
 		#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-			StructuredBuffer<Particle> _particlesBuffer;
+			StructuredBuffer<Sphere> _particlesBuffer;
 		#endif
 
 			void setup()

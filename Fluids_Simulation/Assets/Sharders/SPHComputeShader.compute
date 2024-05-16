@@ -2,16 +2,16 @@
 #pragma kernel ComputeForces //Forces for the particles
 #pragma kernel ComputeDensityPressure //Density/pressure for the particles
 
-struct Particle
+struct Sphere
 {
     float pressure;
     float density;
-    float3 currentForce;
+    float3 Force;
     float3 velocity;
     float3 position;
 };
 
-RWStructuredBuffer<Particle> _particles;
+RWStructuredBuffer<Sphere> _particles;
 
 float particleMass;
 float viscosity;
@@ -26,16 +26,16 @@ float radius5;
 float pi;
 int particleLength;
 float timestep;
-float3 boxSize;
+float3 cubeSize;
 
 [numthreads(100,1,1)]
 void Integrate (uint3 id: SV_DISPATCHTHREADID)
 {
-    float3 vel = _particles[id.x].velocity + ((_particles[id.x].currentForce/particleMass)*timestep);
+    float3 vel = _particles[id.x].velocity + ((_particles[id.x].Force/particleMass)*timestep);
     _particles[id.x].position += vel * timestep;
 
-    float3 topRight = boxSize / 2;
-    float3 bottomLeft = -boxSize/2;
+    float3 topRight = cubeSize / 2;
+    float3 bottomLeft = -cubeSize/2;
 
     // Minimum Enforcements
 
@@ -152,6 +152,6 @@ void ComputeForces (uint3 id: SV_DISPATCHTHREADID)
         }
     }
 
-    _particles[id.x].currentForce = float3(0,(-9.81 * particleMass), 0) - pressure + visc;
+    _particles[id.x].Force = float3(0,(-9.81 * particleMass), 0) - pressure + visc;
 }
 

@@ -106,12 +106,12 @@ public class SPH : MonoBehaviour
     private void SetupComputeBuffers()
     {
         integrateKernel = shader.FindKernel("Integrate");
-        computeForceKernel = shader.FindKernel("ComputeForces");
-        densityPressureKernel = shader.FindKernel("ComputeDensityPressure");
+        computeForceKernel = shader.FindKernel("SetForces");
+        densityPressureKernel = shader.FindKernel("SetDensityAndPressure");
 
         Debug.Log($"Integrate Kernel: {integrateKernel}");
-        Debug.Log($"ComputeForces Kernel: {computeForceKernel}");
-        Debug.Log($"ComputeDensityPressure Kernel: {densityPressureKernel}");
+        Debug.Log($"SetForces Kernel: {computeForceKernel}");
+        Debug.Log($"SetDensityAndPressure Kernel: {densityPressureKernel}");
 
         shader.SetInt("sphereLength", totalSpheres);
         shader.SetFloat("sphereMass", sphereMass);

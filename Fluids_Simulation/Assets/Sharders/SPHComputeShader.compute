@@ -1,6 +1,6 @@
 #pragma kernel Integrate //Responsible for moving the spheres
-#pragma kernel ComputeForces //Forces for the spheres
-#pragma kernel ComputeDensityPressure //Density/pressure for the spheres
+#pragma kernel SetForces //Forces for the spheres
+#pragma kernel SetDensityAndPressure //Density/pressure for the spheres
 
 struct Sphere
 {
@@ -82,7 +82,7 @@ float StfKernel (float distanceSquared)
 }
 
 [numthreads(100,1,1)]
-void ComputeDensityPressure (uint3 id: SV_DISPATCHTHREADID)
+void SetDensityAndPressure (uint3 id: SV_DISPATCHTHREADID)
 {
     
    float3 origin = _spheres[id.x].position;
@@ -123,7 +123,7 @@ float3 SpikyKernelGradient(float distance, float3 direction)
 }
 
 [numthreads(100,1,1)]
-void ComputeForces (uint3 id: SV_DISPATCHTHREADID)
+void SetForces (uint3 id: SV_DISPATCHTHREADID)
 {
     float3 origin = _spheres[id.x].position;
     float density2 = _spheres[id.x].density * _spheres[id.x].density; 

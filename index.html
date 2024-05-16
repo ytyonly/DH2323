@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluid Simulation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            color: #333;
+            scroll-behavior: smooth;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        nav {
+            background: #444;
+            color: #fff;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        nav a {
+            color: #fff;
+            margin: 0 20px;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #fff;
+        }
+        h2 {
+            color: #333;
+        }
+        .about, .content-section {
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .content-section img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background: #333;
+            color: #fff;
+            margin-top: 40px;
+        }
+        footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Fluids Simulation</h1>
+    <p>May 17, 2024 • DH2323</p>
+</header>
+
+<nav>
+    <a href="#about">About</a>
+    <a href="#part1">Spawn Particles</a>
+    <a href="#part2">Randomize</a>
+    <a href="#part3">Calculate Density and Pressure</a>
+
+    <a href="#contact">Contact</a>
+</nav>
+
+
+<div class="container" id="about">
+    <div class="about">
+        <h2>About</h2>
+        <p>This project attempts to implement a real-time fluid simulation using a technique called Smoothed Particle Hydrodynamics (SPH). Everything is built from scratch in Unity with C# and Compute Shaders to create realistic fluid effects.</p>
+        </ul>
+    </div>
+</div>
+
+<div class="container" id="content">
+    <div class="content-section" id="part1">
+        <h2>Spawn Particles</h2>
+        <p></p>
+        <img src="image/image1.png" alt="Project Image 1">
+        <img src="image/image2.png" alt="Project Image 2">
+
+    </div>
+    <div class="content-section" id="part2">
+        <h2>Randomize</h2>
+        <p></p>
+    </div>
+    <div class="content-section" id="part3">
+        <h2>Calculate Density and Pressure</h2>
+        <p></p>
+    </div>
+</div>
+
+<div class="container" id="contact">
+    <div class="content-section">
+        <h2>Contact</h2>
+        <p>If you have any questions or would like to get in touch, please contact me at <a href="mailto:your.email@example.com">your.email@example.com</a>.</p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 • A project for DH2323</p>
+</footer>
+
+</body>
+</html>

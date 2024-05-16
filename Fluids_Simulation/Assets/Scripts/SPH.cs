@@ -45,7 +45,7 @@ public class SPH : MonoBehaviour
     [Header("Physics Settings")]
     public float boundDamping = -0.3f;
     public float viscosity = 0.003f;
-    public float particleMass = 1f;
+    public float sphereMass = 1f;
     public float gasConstant = 2f;
     public float restingDensity = 1f;
     public float timestep = 0.007f;
@@ -113,8 +113,8 @@ public class SPH : MonoBehaviour
         Debug.Log($"ComputeForces Kernel: {computeForceKernel}");
         Debug.Log($"ComputeDensityPressure Kernel: {densityPressureKernel}");
 
-        shader.SetInt("particleLength", totalSpheres);
-        shader.SetFloat("particleMass", particleMass);
+        shader.SetInt("sphereLength", totalSpheres);
+        shader.SetFloat("sphereMass", sphereMass);
         shader.SetFloat("viscosity", viscosity);
         shader.SetFloat("gasConstant", gasConstant);
         shader.SetFloat("restDensity", restingDensity);

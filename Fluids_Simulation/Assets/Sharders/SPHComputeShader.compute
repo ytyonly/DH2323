@@ -13,7 +13,7 @@ struct Sphere
 
 RWStructuredBuffer<Sphere> _spheres;
 
-float particleMass;
+float sphereMass;
 float viscosity;
 float gasConstant;
 float restDensity;
@@ -24,14 +24,14 @@ float radius3;
 float radius4;
 float radius5;
 float pi;
-int particleLength;
+int sphereLength;
 float timestep;
 float3 cubeSize;
 
 [numthreads(100,1,1)]
 void Integrate (uint3 id: SV_DISPATCHTHREADID)
 {
-    float3 vel = _spheres[id.x].velocity + ((_spheres[id.x].Force/particleMass)*timestep);
+    float3 vel = _spheres[id.x].velocity + ((_spheres[id.x].Force/sphereMass)*timestep);
     _spheres[id.x].position += vel * timestep;
 
     float3 topRight = cubeSize / 2;
@@ -88,7 +88,7 @@ void ComputeDensityPressure (uint3 id: SV_DISPATCHTHREADID)
    float3 origin = _spheres[id.x].position;
    float sum = 0;
    
-   for (int i = 0; i < particleLength; i++) {
+   for (int i = 0; i < sphereLength; i++) {
 
         float3 diff = origin - _spheres[i].position;
         float distanceSquared = dot(diff, diff);
@@ -98,7 +98,7 @@ void ComputeDensityPressure (uint3 id: SV_DISPATCHTHREADID)
         } 
    }
    
-   _spheres[id.x].density = sum * particleMass + 0.000001f;
+   _spheres[id.x].density = sum * sphereMass + 0.000001f;
    _spheres[id.x].pressure = gasConstant * (_spheres[id.x].density - restDensity);
 }
 
@@ -127,11 +127,11 @@ void ComputeForces (uint3 id: SV_DISPATCHTHREADID)
 {
     float3 origin = _spheres[id.x].position;
     float density2 = _spheres[id.x].density * _spheres[id.x].density; 
-    float mass2 = particleMass * particleMass;
+    float mass2 = sphereMass * sphereMass;
     float3 pressure = float3(0,0,0);
     float3 visc = float3(0,0,0);
 
-    for (int i = 0; i < particleLength; i++) {
+    for (int i = 0; i < sphereLength; i++) {
         
         if (origin.x == _spheres[i].position.x && origin.y == _spheres[i].position.y && origin.z == _spheres[i].position.z) {
             continue;
@@ -152,6 +152,6 @@ void ComputeForces (uint3 id: SV_DISPATCHTHREADID)
         }
     }
 
-    _spheres[id.x].Force = float3(0,(-9.81 * particleMass), 0) - pressure + visc;
+    _spheres[id.x].Force = float3(0,(-9.81 * sphereMass), 0) - pressure + visc;
 }
 

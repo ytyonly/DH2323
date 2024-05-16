@@ -111,36 +111,35 @@ float3 SpikyKernelGradient(float distance, float3 direction)
 }
 
 [numthreads(100,1,1)]
-void SetForces(uint3 id : SV_DISPATCHTHREADID)
+void SetForces (uint3 id: SV_DISPATCHTHREADID)
 {
     float3 origin = _spheres[id.x].position;
     float density2 = _spheres[id.x].density * _spheres[id.x].density; 
     float mass2 = sphereMass * sphereMass;
-    float3 pressure = float3(0, 0, 0);
-    float3 visc = float3(0, 0, 0);
-    float3 gravity = float3(0, -9.81 * sphereMass, 0);
+    float3 pressure = float3(0,0,0);
+    float3 visc = float3(0,0,0);
 
     for (int i = 0; i < sphereLength; i++) {
-        if (i == id.x) // Skip self-comparison
+        
+        if (origin.x == _spheres[i].position.x && origin.y == _spheres[i].position.y && origin.z == _spheres[i].position.z) {
             continue;
+        }
 
         float dist = distance(_spheres[i].position, origin);
-        if (dist < radius * 2) {
-            float3 pressureGradientDirection = normalize(origin - _spheres[i].position);
+        if (dist < radius*2) {
+            float3 pressureGradientDirection = normalize(_spheres[id.x].position - _spheres[i].position);
             
-            float3 pressureContribution = mass2 * SpikyKernelGradient(dist, pressureGradientDirection);
-            pressureContribution *= (_spheres[id.x].pressure / density2 + _spheres[i].pressure / (_spheres[i].density * _spheres[i].density));
+            float3 _pressureContribution = mass2 * SpikyKernelGradient(dist, pressureGradientDirection);
+            _pressureContribution *= (_spheres[id.x].pressure / density2 + _spheres[i].pressure / (_spheres[i].density * _spheres[i].density));
             
-            float3 velocityDifference = _spheres[i].velocity - _spheres[id.x].velocity;
-            float3 viscosityContribution = viscosity * mass2 * velocityDifference / _spheres[i].density;
-            viscosityContribution *= SpikyKernelSecondDerivative(dist);
+            float3 _viscosityContribution = viscosity * mass2 * (_spheres[i].velocity - _spheres[id.x].velocity) / _spheres[i].density;
+            _viscosityContribution *= SpikyKernelSecondDerivative(dist);
 
-            pressure += pressureContribution;
-            visc += viscosityContribution;
+            pressure += _pressureContribution;
+            visc += _viscosityContribution;
         }
     }
 
-    _spheres[id.x].force = gravity - pressure + visc;
+    _spheres[id.x].force = float3(0,(-9.81 * sphereMass), 0) - pressure + visc;
 }
-
 

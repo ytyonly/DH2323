@@ -449,14 +449,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b00a4bd1cb7999b48995dc87549c8eb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showSphere: 1
-  numToSpawn: {x: 10, y: 4, z: 10}
-  boxSize: {x: 3, y: 7.5, z: 2}
-  spawnCenter: {x: 0, y: 1, z: 0}
-  particleRadius: 0.1
-  spawnJitter: 0.2
-  particleMesh: {fileID: 2540817853737639666, guid: 280e91caaf842b6499e9381308f6e72f, type: 3}
-  particleRenderSize: 8
+  visibleSpheres: 1
+  sphereAmount: {x: 10, y: 10, z: 10}
+  cubeSize: {x: 4, y: 10, z: 3}
+  spawnPoint: {x: 0, y: 0, z: 0}
+  sphereRadius: 0.1
+  spawnRandomness: 0.2
+  sphereMesh: {fileID: 2540817853737639666, guid: 280e91caaf842b6499e9381308f6e72f, type: 3}
+  sphereRenderSize: 8
   material: {fileID: 2100000, guid: 8b6832d93f9bacc4db479c4f198980a3, type: 2}
   shader: {fileID: 7200000, guid: ebb55237ef341924383592f2a54506ef, type: 3}
   particles: []

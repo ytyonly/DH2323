@@ -20,7 +20,7 @@ struct Sphere
     float3 position;
 };
 
-StructuredBuffer<Sphere> particles;
+StructuredBuffer<Sphere> spheres;
 int numParticles;
 float sphereRadius;
 float blendStrength;
@@ -84,7 +84,7 @@ float4 SceneInfo(float3 eye) {
     float3 globalColour = waterColor;
     
     for (int i = 0; i < numParticles; i ++) {
-        Sphere particle = particles[i];
+        Sphere particle = spheres[i];
 
         float localDst = GetShapeDistance(particle,eye);
         float3 localColour = waterColor;

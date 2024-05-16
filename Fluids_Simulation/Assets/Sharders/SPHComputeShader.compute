@@ -1,6 +1,6 @@
-#pragma kernel Integrate //Responsible for moving the particles
-#pragma kernel ComputeForces //Forces for the particles
-#pragma kernel ComputeDensityPressure //Density/pressure for the particles
+#pragma kernel Integrate //Responsible for moving the spheres
+#pragma kernel ComputeForces //Forces for the spheres
+#pragma kernel ComputeDensityPressure //Density/pressure for the spheres
 
 struct Sphere
 {

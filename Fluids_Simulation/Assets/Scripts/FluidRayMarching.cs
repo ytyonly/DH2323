@@ -69,8 +69,8 @@ public class FluidRayMarching : MonoBehaviour
     {
         // SpawnParticlesInBox();
         InitRenderTexture();
-        raymarching.SetBuffer(0, "particles", sph._particlesBuffer);
-        raymarching.SetInt("numParticles", sph.particles.Length);
+        raymarching.SetBuffer(0, "spheres", sph._particlesBuffer);
+        raymarching.SetInt("numParticles", sph.spheres.Length);
         raymarching.SetFloat("sphereRadius", viewRadius);
         raymarching.SetFloat("blendStrength", blendStrength);
         raymarching.SetVector("waterColor", waterColor);

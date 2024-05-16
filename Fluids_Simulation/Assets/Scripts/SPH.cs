@@ -33,16 +33,16 @@ public class SPH : MonoBehaviour
 
     public float spawnRandomness = 0.2f;
 
-    [Header("Sphere Rendering")]
-    public Mesh particleMesh;
-    public float particleRenderSize = 8f;
+    [Header("Sphere Settings")]
+    public Mesh sphereMesh;
+    public float sphereRenderSize = 8f;
     public Material material;
 
-    [Header("Compute")]
+    [Header("Shader")]
     public ComputeShader shader;
-    public Sphere[] particles;
+    public Sphere[] spheres;
 
-    [Header("Fluid Constants")]
+    [Header("Physics Settings")]
     public float boundDamping = -0.3f;
     public float viscosity = 0.003f;
     public float particleMass = 1f;
@@ -65,19 +65,19 @@ public class SPH : MonoBehaviour
 
         uint[] args =
         {
-            particleMesh.GetIndexCount(0),
+            sphereMesh.GetIndexCount(0),
             (uint)totalSpheres,
-            particleMesh.GetIndexStart(0),
-            particleMesh.GetBaseVertex(0),
+            sphereMesh.GetIndexStart(0),
+            sphereMesh.GetBaseVertex(0),
             0
         };
         _argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         _argsBuffer.SetData(args);
 
         _particlesBuffer = new ComputeBuffer(totalSpheres, 44);
-        Debug.Log(particles.Count());
+        Debug.Log(spheres.Count());
 
-        _particlesBuffer.SetData(particles);
+        _particlesBuffer.SetData(spheres);
 
         SetupComputeBuffers();
     }
@@ -85,14 +85,14 @@ public class SPH : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        material.SetFloat(SizeProperty, particleRenderSize);
+        material.SetFloat(SizeProperty, sphereRenderSize);
         material.SetBuffer(ParticlesBufferProperty, _particlesBuffer);
         //Debug.Log(_particlesBuffer);
 
         if (visibleSpheres)
         {
             Graphics.DrawMeshInstancedIndirect(
-                particleMesh,
+                sphereMesh,
                 0,
                 material,
                 new Bounds(Vector3.zero, cubeSize),
@@ -170,7 +170,7 @@ public class SPH : MonoBehaviour
             }
         }
         Debug.Log(_particles.Count);
-        particles = _particles.ToArray();
+        spheres = _particles.ToArray();
     }
 
     private void OnDrawGizmos()

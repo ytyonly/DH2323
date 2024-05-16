@@ -53,12 +53,12 @@ public class FluidRayMarching : MonoBehaviour
 
     private bool render = false;
 
-    public ComputeBuffer _particlesBuffer;
+    public ComputeBuffer _spheresBuffer;
 
-    private void SpawnParticlesInBox()
+    private void SpawnSpheres()
     {
-        _particlesBuffer = new ComputeBuffer(1, 44);
-        _particlesBuffer.SetData(new Sphere[] {
+        _spheresBuffer = new ComputeBuffer(1, 44);
+        _spheresBuffer.SetData(new Sphere[] {
         new Sphere {
         position = new Vector3(0,0,0)
        }});
@@ -67,9 +67,9 @@ public class FluidRayMarching : MonoBehaviour
 
     public void Begin()
     {
-        // SpawnParticlesInBox();
+        // SpawnSpheres();
         InitRenderTexture();
-        raymarching.SetBuffer(0, "spheres", sph._particlesBuffer);
+        raymarching.SetBuffer(0, "spheres", sph._spheresBuffer);
         raymarching.SetInt("numParticles", sph.spheres.Length);
         raymarching.SetFloat("sphereRadius", viewRadius);
         raymarching.SetFloat("blendStrength", blendStrength);

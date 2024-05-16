@@ -36,13 +36,13 @@ Shader "Instanced/GridTestParticleShader" {
 			};
 
 		#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-			StructuredBuffer<Sphere> _particlesBuffer;
+			StructuredBuffer<Sphere> _spheresBuffer;
 		#endif
 
 			void setup()
 			{
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-				float3 pos = _particlesBuffer[unity_InstanceID].position;
+				float3 pos = _spheresBuffer[unity_InstanceID].position;
 				float size = _size;
 
 				unity_ObjectToWorld._11_21_31_41 = float4(size, 0, 0, 0);
@@ -61,7 +61,7 @@ Shader "Instanced/GridTestParticleShader" {
 			void surf(Input IN, inout SurfaceOutputStandard o) {
 
 				#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-					float dens = _particlesBuffer[unity_InstanceID].pressure;
+					float dens = _spheresBuffer[unity_InstanceID].pressure;
 					float4 col = float4(dens/_DensityRange, 0,0, 1);
 				
 					o.Albedo = col.rgb;

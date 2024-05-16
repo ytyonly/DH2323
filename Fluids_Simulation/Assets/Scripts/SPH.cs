@@ -51,17 +51,17 @@ public class SPH : MonoBehaviour
     public float timestep = 0.007f;
 
     private ComputeBuffer _argsBuffer;
-    public ComputeBuffer _particlesBuffer;
+    public ComputeBuffer _spheresBuffer;
     private int integrateKernel;
     private int computeForceKernel;
     private int densityPressureKernel;
 
     private static readonly int SizeProperty = Shader.PropertyToID("_size");
-    private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_particlesBuffer");
+    private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_spheresBuffer");
 
     private void Awake()
     {
-        SpawnParticlesInBox();
+        SpawnSpheres();
 
         uint[] args =
         {
@@ -74,10 +74,10 @@ public class SPH : MonoBehaviour
         _argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         _argsBuffer.SetData(args);
 
-        _particlesBuffer = new ComputeBuffer(totalSpheres, 44);
+        _spheresBuffer = new ComputeBuffer(totalSpheres, 44);
         Debug.Log(spheres.Count());
 
-        _particlesBuffer.SetData(spheres);
+        _spheresBuffer.SetData(spheres);
 
         SetupComputeBuffers();
     }
@@ -86,8 +86,8 @@ public class SPH : MonoBehaviour
     void Update()
     {
         material.SetFloat(SizeProperty, sphereRenderSize);
-        material.SetBuffer(ParticlesBufferProperty, _particlesBuffer);
-        //Debug.Log(_particlesBuffer);
+        material.SetBuffer(ParticlesBufferProperty, _spheresBuffer);
+        //Debug.Log(_spheresBuffer);
 
         if (visibleSpheres)
         {
@@ -121,16 +121,14 @@ public class SPH : MonoBehaviour
         shader.SetFloat("boundDamping", boundDamping);
         shader.SetFloat("pi", Mathf.PI);
         shader.SetVector("cubeSize", cubeSize);
-
         shader.SetFloat("radius", sphereRadius);
         shader.SetFloat("radius2", sphereRadius * sphereRadius);
         shader.SetFloat("radius3", sphereRadius * sphereRadius * sphereRadius);
         shader.SetFloat("radius4", sphereRadius * sphereRadius * sphereRadius * sphereRadius);
         shader.SetFloat("radius5", sphereRadius * sphereRadius * sphereRadius * sphereRadius * sphereRadius);
-
-        shader.SetBuffer(integrateKernel, "_particles", _particlesBuffer);
-        shader.SetBuffer(computeForceKernel, "_particles", _particlesBuffer);
-        shader.SetBuffer(densityPressureKernel, "_particles", _particlesBuffer);
+        shader.SetBuffer(integrateKernel, "_spheres", _spheresBuffer);
+        shader.SetBuffer(computeForceKernel, "_spheres", _spheresBuffer);
+        shader.SetBuffer(densityPressureKernel, "_spheres", _spheresBuffer);
     }
 
     void FixedUpdate()
@@ -144,9 +142,9 @@ public class SPH : MonoBehaviour
         shader.Dispatch(integrateKernel, threadGroups, 1, 1);
     }
 
-    private void SpawnParticlesInBox()
+    private void SpawnSpheres()
     {
-        List<Sphere> _particles = new List<Sphere>();
+        List<Sphere> _spheres = new List<Sphere>();
 
         for (int x = 0; x < sphereAmount.x; x++)
         {
@@ -164,13 +162,13 @@ public class SPH : MonoBehaviour
                         position = spawnPosition
                     };
 
-                    _particles.Add(p);
+                    _spheres.Add(p);
 
                 }
             }
         }
-        Debug.Log(_particles.Count);
-        spheres = _particles.ToArray();
+        Debug.Log(_spheres.Count);
+        spheres = _spheres.ToArray();
     }
 
     private void OnDrawGizmos()

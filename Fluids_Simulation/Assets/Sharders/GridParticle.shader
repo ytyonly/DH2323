@@ -29,7 +29,7 @@ Shader "Instanced/GridTestParticleShader" {
 			{
                 float pressure;
                 float density;
-                float3 Force;
+                float3 force;
                 float3 velocity;
 				float3 position;
 				

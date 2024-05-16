@@ -9,7 +9,7 @@ public class FluidRayMarching : MonoBehaviour
     {
         public float pressure;
         public float density;
-        public Vector3 Force;
+        public Vector3 force;
         public Vector3 velocity;
         public Vector3 position;
     }

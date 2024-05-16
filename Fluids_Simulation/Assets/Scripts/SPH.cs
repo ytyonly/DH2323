@@ -12,7 +12,7 @@ public class SPH : MonoBehaviour
     {
         public float pressure;
         public float density;
-        public Vector3 Force;
+        public Vector3 force;
         public Vector3 velocity;
         public Vector3 position;
     }
@@ -122,10 +122,10 @@ public class SPH : MonoBehaviour
         shader.SetFloat("pi", Mathf.PI);
         shader.SetVector("cubeSize", cubeSize);
         shader.SetFloat("radius", sphereRadius);
-        shader.SetFloat("radius2", sphereRadius * sphereRadius);
-        shader.SetFloat("radius3", sphereRadius * sphereRadius * sphereRadius);
-        shader.SetFloat("radius4", sphereRadius * sphereRadius * sphereRadius * sphereRadius);
-        shader.SetFloat("radius5", sphereRadius * sphereRadius * sphereRadius * sphereRadius * sphereRadius);
+        shader.SetFloat("radiusPower2", sphereRadius * sphereRadius);
+        shader.SetFloat("radiusPower3", sphereRadius * sphereRadius * sphereRadius);
+        shader.SetFloat("radiusPower4", sphereRadius * sphereRadius * sphereRadius * sphereRadius);
+        shader.SetFloat("radiusPower5", sphereRadius * sphereRadius * sphereRadius * sphereRadius * sphereRadius);
         shader.SetBuffer(integrateKernel, "_spheres", _spheresBuffer);
         shader.SetBuffer(computeForceKernel, "_spheres", _spheresBuffer);
         shader.SetBuffer(densityPressureKernel, "_spheres", _spheresBuffer);

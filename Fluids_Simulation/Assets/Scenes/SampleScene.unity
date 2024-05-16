@@ -449,7 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b00a4bd1cb7999b48995dc87549c8eb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visibleSpheres: 1
+  visibleSpheres: 0
   sphereAmount: {x: 10, y: 10, z: 10}
   cubeSize: {x: 4, y: 10, z: 3}
   spawnPoint: {x: 0, y: 0, z: 0}
@@ -459,10 +459,10 @@ MonoBehaviour:
   sphereRenderSize: 8
   material: {fileID: 2100000, guid: 8b6832d93f9bacc4db479c4f198980a3, type: 2}
   shader: {fileID: 7200000, guid: ebb55237ef341924383592f2a54506ef, type: 3}
-  particles: []
+  spheres: []
   boundDamping: -0.3
   viscosity: 0.003
-  particleMass: 1
+  sphereMass: 1
   gasConstant: 2
   restingDensity: 1
   timestep: 0.001

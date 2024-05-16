@@ -63,14 +63,13 @@ public class SPH : MonoBehaviour
     {
         SpawnSpheres();
 
-        uint[] args =
-        {
-            sphereMesh.GetIndexCount(0),
-            (uint)totalSpheres,
-            sphereMesh.GetIndexStart(0),
-            sphereMesh.GetBaseVertex(0),
-            0
-        };
+        uint[] args = new uint[5];
+        args[0] = sphereMesh.GetIndexCount(0);
+        args[1] = (uint)totalSpheres;
+        args[2] = sphereMesh.GetIndexStart(0);
+        args[3] = sphereMesh.GetBaseVertex(0);
+        args[4] = 0;
+
         _argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         _argsBuffer.SetData(args);
 
@@ -81,6 +80,7 @@ public class SPH : MonoBehaviour
 
         SetupComputeBuffers();
     }
+
 
     // Update is called once per frame
     void Update()
@@ -137,22 +137,23 @@ public class SPH : MonoBehaviour
         shader.SetFloat("timestep", timestep);
 
         int threadGroups = Mathf.CeilToInt(totalSpheres / 100.0f);
-        shader.Dispatch(densityPressureKernel, threadGroups, 1, 1);
-        shader.Dispatch(computeForceKernel, threadGroups, 1, 1);
-        shader.Dispatch(integrateKernel, threadGroups, 1, 1);
+        Vector3Int dispatchSize = new Vector3Int(threadGroups, 1, 1);
+        shader.Dispatch(densityPressureKernel, dispatchSize.x, dispatchSize.y, dispatchSize.z);
+        shader.Dispatch(computeForceKernel, dispatchSize.x, dispatchSize.y, dispatchSize.z);
+        shader.Dispatch(integrateKernel, dispatchSize.x, dispatchSize.y, dispatchSize.z);
     }
+
 
     private void SpawnSpheres()
     {
         List<Sphere> _spheres = new List<Sphere>();
 
-        for (int x = 0; x < sphereAmount.x; x++)
+        foreach (int x in Enumerable.Range(0, sphereAmount.x))
         {
-            for (int y = 0; y < sphereAmount.y; y++)
+            foreach (int y in Enumerable.Range(0, sphereAmount.y))
             {
-                for (int z = 0; z < sphereAmount.z; z++)
+                foreach (int z in Enumerable.Range(0, sphereAmount.z))
                 {
-
                     Vector3 spawnPosition = spawnPoint + new Vector3(x * sphereRadius * 2, y * sphereRadius * 2, z * sphereRadius * 2);
                     spawnPosition += Random.onUnitSphere * sphereRadius * spawnRandomness;
                     Debug.Log(spawnPosition);
@@ -163,13 +164,14 @@ public class SPH : MonoBehaviour
                     };
 
                     _spheres.Add(p);
-
                 }
             }
         }
+
         Debug.Log(_spheres.Count);
         spheres = _spheres.ToArray();
     }
+
 
     private void OnDrawGizmos()
     {

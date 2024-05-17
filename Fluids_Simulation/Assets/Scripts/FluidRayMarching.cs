@@ -65,10 +65,12 @@ public class FluidRayMarching : MonoBehaviour
 
     }
 
+    // This method prepares the raymarching shader for rendering.
     public void Begin()
     {
         // SpawnSpheres();
         InitRenderTexture();
+        //Here different values are set 
         raymarching.SetBuffer(0, "spheres", sph._spheresBuffer);
         raymarching.SetInt("numParticles", sph.spheres.Length);
         raymarching.SetFloat("sphereRadius", viewRadius);
@@ -80,11 +82,13 @@ public class FluidRayMarching : MonoBehaviour
     }
 
 
+    // This method is called by Unity to process and render images.
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
 
         // InitRenderTexture();
 
+        //If rendering hasn't start then begin doing it
         if (!render)
         {
             Begin();

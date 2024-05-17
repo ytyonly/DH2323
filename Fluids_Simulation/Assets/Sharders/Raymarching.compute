@@ -34,10 +34,12 @@ struct Ray {
     float3 direction;
 };
 
+// This function calculates the distance from the camera/eye to the surface of a sphere.
 float SphereDistance(float3 eye, float3 centre, float radius) {
     return distance(eye, centre) - radius;
 }
 
+// This function creates a ray with a specified origin and direction.
 Ray CreateRay(float3 origin, float3 direction) {
     Ray ray;
     ray.origin = origin;
@@ -45,8 +47,11 @@ Ray CreateRay(float3 origin, float3 direction) {
     return ray;
 }
 
+// This function creates a ray in world space originating from the camera
 Ray CreateCameraRay(float2 uv) {
+    //Calculate origin (start position)
     float3 origin = mul(_CameraToWorld, float4(0,0,0,1)).xyz;
+    //Calculate the ray direction
     float3 direction = mul(_CameraInverseProjection, float4(uv,0,1)).xyz;
     direction = mul(_CameraToWorld, float4(direction,0)).xyz;
     direction = normalize(direction);
@@ -78,11 +83,12 @@ float GetShapeDistance(Sphere particle, float3 eye) {
     return maxDst;
 }
 
-
+// This function calculates the distance and color of the scene
 float4 SceneInfo(float3 eye) {
     float globalDst = maxDst;
     float3 globalColour = waterColor;
     
+    // Iterate through all particles (spheres) in the scene.
     for (int i = 0; i < numParticles; i ++) {
         Sphere particle = spheres[i];
 
@@ -95,6 +101,7 @@ float4 SceneInfo(float3 eye) {
         globalDst = globalCombined.w;        
     }
 
+    // Return the final color and distance as a float4 vector.
     return float4(globalColour, globalDst);
 }
 
@@ -105,14 +112,18 @@ float3 EstimateNormal(float3 p) {
     return normalize(float3(x,y,z));
 }
 
+//Calculates the shadow intensity based on raymarching through the scene.
 float CalculateShadow(Ray ray, float dstToShadePoint) {
     float rayDst = 0;
     int marchSteps = 0;
     float shadowIntensity = .2;
     float brightness = 1;
 
+    // March along the ray until reaching the shade point.
     while (rayDst < dstToShadePoint) {
         marchSteps ++;
+        
+        // Get scene information (color and distance) at the current ray origin.
         float4 sceneInfo = SceneInfo(ray.origin);
         float dst = sceneInfo.w;
         
@@ -125,6 +136,8 @@ float CalculateShadow(Ray ray, float dstToShadePoint) {
         ray.origin += ray.direction * dst;
         rayDst += dst;
     }
+
+    // Calculate the final shadow intensity based on the shadow intensity and brightness.
     return shadowIntensity + (1-shadowIntensity) * brightness;
 }
 
@@ -148,6 +161,7 @@ float LinearEyeDepth( float rawdepth )
     return 1.0 / (z * rawdepth + w);
 }
 
+// Entry point for the compute shader.
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -164,30 +178,32 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     float depth = LinearEyeDepth(_DepthTexture[id.xy]);
 
-    
-
+    // Ray marching loop until the maximum distance is reached.
     while (rayDst < maxDst) {
         marchSteps ++;
+
+        // Get scene information (color and distance) from the ray origin.
         float4 sceneInfo = SceneInfo(ray.origin);
         float dst = sceneInfo.w;
 
+        // Early termination: if ray's distance is beyond the depth value
         if (rayDst >= depth) {
             Destination[id.xy] = Source[id.xy];
             break;
         }
         
         if (dst <= epsilon) {
+            // Calculate shading parameters.
             float3 pointOnSurface = ray.origin + ray.direction * dst;
             float3 normal = EstimateNormal(pointOnSurface - ray.direction * epsilon);
             float3 lightDir = -_Light;
             float lighting = saturate(saturate(dot(normal,lightDir))) ;
-
             float3 reflectDir = reflect(-lightDir, normal);
             float spec = pow(max(dot(ray.direction, reflectDir), 0.0), 32);
             float3 specular = 0.7 * spec * float3(1,1,1);
 
+            // Retrieve scene color and apply shading.
             float3 col = sceneInfo.xyz;
-
             float3 t1 = cross(normal, float3(0,0,1));
             float3 t2 = cross(normal, float3(0,1,0));
             float3 tangent = float3(0,0,0);
@@ -197,18 +213,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             else {
                 tangent = normalize(t2);
             }
-
             float3x3 tangentMatrix = float3x3(tangent,cross(tangent, normal),normal);
-
             float3 viewDir = normalize(pointOnSurface-_CameraPos);
-
             float3 refracted = mul(tangentMatrix, refract(viewDir, normal,1));
             
-
+            // Apply shading and assign the result to the destination texture.
             Destination[id.xy] = float4(lerp(col, Source[id.xy+(refracted.xy)], 0.8) * (specular + _AmbientLight + lighting * 0.01),1);
            
-
-            break;
+            //Exit after shading
+            break;  
         }
 
         ray.origin += ray.direction * dst;

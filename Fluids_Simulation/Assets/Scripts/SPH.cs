@@ -59,8 +59,10 @@ public class SPH : MonoBehaviour
     private static readonly int SizeProperty = Shader.PropertyToID("_size");
     private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_spheresBuffer");
 
+    // This method is called when the script instance is being loaded.
     private void Awake()
     {
+        // Call the method to spawn spheres in the scene.
         SpawnSpheres();
 
         uint[] args = new uint[5];
@@ -70,9 +72,11 @@ public class SPH : MonoBehaviour
         args[3] = sphereMesh.GetBaseVertex(0);
         args[4] = 0;
 
+        // Create a compute buffer to hold the draw arguments.
         _argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         _argsBuffer.SetData(args);
 
+        // Create a compute buffer to hold the sphere data.
         _spheresBuffer = new ComputeBuffer(totalSpheres, 44);
         Debug.Log(spheres.Count());
 
@@ -103,6 +107,7 @@ public class SPH : MonoBehaviour
 
     }
 
+    // This method sets up compute buffers and kernels for the shader.
     private void SetupComputeBuffers()
     {
         integrateKernel = shader.FindKernel("Integrate");
@@ -131,6 +136,7 @@ public class SPH : MonoBehaviour
         shader.SetBuffer(densityPressureKernel, "_spheres", _spheresBuffer);
     }
 
+    // This method is called every fixed frame-rate frame
     void FixedUpdate()
     {
         shader.SetVector("cubeSize", cubeSize);
@@ -144,10 +150,13 @@ public class SPH : MonoBehaviour
     }
 
 
+    // This method spawns spheres in a 3D grid pattern with some randomness.
     private void SpawnSpheres()
     {
+        // Create a list to temporarily hold the sphere data.  
         List<Sphere> _spheres = new List<Sphere>();
 
+        // Loop over the range of x, y, and z dimensions specified by sphereAmount.
         foreach (int x in Enumerable.Range(0, sphereAmount.x))
         {
             foreach (int y in Enumerable.Range(0, sphereAmount.y))
@@ -155,9 +164,11 @@ public class SPH : MonoBehaviour
                 foreach (int z in Enumerable.Range(0, sphereAmount.z))
                 {
                     Vector3 spawnPosition = spawnPoint + new Vector3(x * sphereRadius * 2, y * sphereRadius * 2, z * sphereRadius * 2);
+                    // Add some random displacement to the position for randomness.
                     spawnPosition += Random.onUnitSphere * sphereRadius * spawnRandomness;
                     Debug.Log(spawnPosition);
 
+                    // Create a new sphere with the calculated position.
                     Sphere p = new Sphere
                     {
                         position = spawnPosition
@@ -173,9 +184,13 @@ public class SPH : MonoBehaviour
     }
 
 
+    //Draws the bounding box
     private void OnDrawGizmos()
     {
+        //Set the color
         Gizmos.color = Color.black;
+
+        // Draw a wireframe cube centered at the origin
         Gizmos.DrawWireCube(Vector3.zero, cubeSize);
 
         if (!Application.isPlaying)

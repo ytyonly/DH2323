@@ -28,6 +28,7 @@ int sphereLength;
 float timestep;
 float3 cubeSize;
 
+//Responsible of sphere movement
 [numthreads(100,1,1)]
 void Integrate (uint3 id: SV_DISPATCHTHREADID)
 {
@@ -62,13 +63,14 @@ void Integrate (uint3 id: SV_DISPATCHTHREADID)
     _spheres[id.x].velocity = vel;
 }
 
-
+//poly6 smoothing kernel
 float StfKernel (float distanceSquared)
 {
     float x = 1.0f - distanceSquared / radiusPower2;
     return 315.f / (64.f * pi * radiusPower3) * x * x * x;
 }
 
+//Responsible of density and pressure calculations
 [numthreads(100,1,1)]
 void SetDensityAndPressure (uint3 id: SV_DISPATCHTHREADID)
 {
@@ -90,26 +92,27 @@ void SetDensityAndPressure (uint3 id: SV_DISPATCHTHREADID)
    _spheres[id.x].pressure = gasConstant * (_spheres[id.x].density - restDensity);
 }
 
-// Doyub Kim page 130
+//Smoothing function for compute forces
 float SpikyKernelFirstDerivative(float distance)
 {
     float x = 1.0f - distance / radius;
     return -45.f / ( pi * radiusPower4 ) * x * x;
 }
 
-// Doyub Kim page 130
+//Smoothing function for compute forces
 float SpikyKernelSecondDerivative(float distance)
 {
     float x = 1.0f - distance / radius;
     return 90.f / ( pi * radiusPower5 ) * x;
 }
 
-
+//Smoothing function for compute forces
 float3 SpikyKernelGradient(float distance, float3 direction)
 {
     return SpikyKernelFirstDerivative(distance) * direction;
 }
 
+//Responsible of pressure and viscosity force calculations
 [numthreads(100,1,1)]
 void SetForces (uint3 id: SV_DISPATCHTHREADID)
 {
